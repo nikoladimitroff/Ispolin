@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<h1>This is the main page of our new educational system!</h1>
+<h2>Check the main pages of one of the available courses:</h2>
+<dl id="available-courses" data-bind="foreach: availableCourses">
+    <dt><a data-bind="text: name, attr: { 'href': link }"></a></dt>
+    <dd data-bind="text: description"></dd>
+</dl>
+
+<script src="3rdparty/knockout-latest.js"></script>
+<script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+    "htmlTasks": ["concat:client", "copy:system-index"],
+    "cssTasks": ["newer:less:client"],
+    "tsTasks": [
+        "newer:tslint",
+        "newer:ts:debug"
+    ]
+}

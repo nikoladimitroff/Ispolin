@@ -1,0 +1,33 @@
+{
+  "name": "Unnamed",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.10.1",
+    "knockout": "^3.3.0",
+    "mongodb": "^2.0.35",
+    "q": "^1.2.0",
+    "restify": "^3.0.3"
+  },
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^3.6.0",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-copy": "^0.8.0",
+    "grunt-contrib-less": "^1.0.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-mocha-test": "^0.12.7",
+    "grunt-newer": "^1.1.1",
+    "grunt-preprocess": "^4.1.0",
+    "grunt-ts": "^4.2.0-beta.1",
+    "grunt-tslint": "^2.3.1-beta",
+    "load-grunt-tasks": "^3.1.0",
+    "mocha": "^2.2.1",
+    "tslint": "^2.3.1-beta",
+    "typescript": "^1.5.0-beta"
+  }
+}

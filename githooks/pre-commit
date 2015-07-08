@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+
+# Go to repo root
+cd "$(git rev-parse --show-toplevel)"
+
+# Run functional tests
+node_modules/.bin/mocha --ui bdd --colors tests/main.js -R min 2> test_output
+isThereFailingTest=$(cat test_output | grep failing | wc -l)
+rm test_output
+
+if [ "$isThereFailingTest" -ne 0 ]; then
+    echo ""
+    echo "COMMIT FAILED:"
+    echo "There's a failing test."
+    echo "(Run grunt test to see the errors)"
+    exit 1
+fi
+
+# Run style tests
+jscsLines=$(grunt check-code)
+
+if [ "$result" -ne 1 ]; then
+    echo ""
+    echo "COMMIT FAILED:"
+    echo "Our code checkers reported errors. Please fix them and try committing again."
+    echo "(Run grunt check-code to see the errors)"
+    exit 1
+fi
+
+exit 0
