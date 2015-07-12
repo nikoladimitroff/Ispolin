@@ -1,31 +1,38 @@
 /// <reference path="../../typings/knockout/knockout.d.ts" />
+/// <reference path="./utils.ts" />
 
-var viewmodel = {
-    availableCourses: ko.observableArray(),
-    error: ko.observable("")
-};
+class CourseInfo {
+    public name: string;
+    public link: string;
+    public description: string;
 
-let xhr = new XMLHttpRequest();
-
-xhr.onreadystatechange = function() {
-    if (xhr.readyState == XMLHttpRequest.DONE ) {
-       if(xhr.status == 200){
-           var json = JSON.parse(xhr.responseText);
-           console.log(json);
-           Object.keys(json).forEach(function (course) {
-                viewmodel.availableCourses.push({
-                    name: course,
-                    link: json[course].link,
-                    description: json[course].description
-                });
-           });
-       }
-       else {
-            viewmodel.error("Sorry, could not load the list of available courses.");
-       }
-       ko.applyBindings(viewmodel);
+    constructor(name: string, link: string, description: string) {
+        this.name = name;
+        this.link = link;
+        this.description = description;
     }
 }
 
-xhr.open("GET", "/api/courses", true);
-xhr.send();
+class Viewmodel {
+    public availableCourses: KnockoutObservableArray<CourseInfo>;
+
+    constructor() {
+        this.availableCourses = ko.observableArray<CourseInfo>();
+    }
+}
+
+let viewmodel = new Viewmodel();
+type CourseMap = { [name: string]: {link: string, description: string} };
+
+let initializeBindings = (courses: CourseMap) => {
+   Object.keys(courses).forEach((course: string) => {
+        let info = new CourseInfo(course,
+                                  courses[course].link,
+                                  courses[course].description);
+        viewmodel.availableCourses.push(info);
+   });
+   ko.applyBindings(viewmodel);
+};
+
+Utils.loadJSON("/api/courses", "GET")
+     .done(initializeBindings);

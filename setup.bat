@@ -10,3 +10,4 @@ npm install
 npm install grunt-cli -g
 npm install tsd -g
 tsd reinstall -so
+grunt build

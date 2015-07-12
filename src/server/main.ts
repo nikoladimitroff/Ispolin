@@ -1,8 +1,8 @@
-import Server = require("./server");
+import Server from "./server";
 
 "use strict";
 function main(): void {
-    let server: Server.Server = new Server.Server();
+    let server: Server = new Server();
     server.listen();
 }
 main();

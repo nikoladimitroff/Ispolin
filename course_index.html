@@ -4,7 +4,20 @@
 </head>
 <body>
 <h1>Welcome to Course 101!</h1>
-
+<nav>
+    <ul data-bind="foreach: mainMenu">
+        <li>
+            <a data-bind="text: name,
+                          attr: {href: link},
+                          click: $root.changeView.bind($root, link)">
+            </a>
+        </li>
+    </ul>
+</nav>
+<content data-bind="component: activeView">
+</content>
+<script src="3rdparty/knockout-latest.js"></script>
+<script src="3rdparty/q.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

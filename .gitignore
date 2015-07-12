@@ -4,6 +4,8 @@ local_grunt_settings.json
 src/**/*.js
 src/**/*.js.map
 typings
+style/**/*.css
+tscommand-*.tmp.txt
 
 # Github nodejs ignores
 # Logs

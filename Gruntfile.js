@@ -23,6 +23,14 @@ module.exports = function (grunt) {
                 files: "src/**/*.ts",
                 tasks: settings.tsTasks,
             },
+            resources: {
+                files: "resources/*",
+                tasks: ["copy:resources"]
+            },
+            libs: {
+                files: ["styles/fonts/*", "styles/cursors/*"],
+                tasks: ["copy:client"]
+            }
         },
         less: {
             options: {
@@ -64,16 +72,22 @@ module.exports = function (grunt) {
             options: {
                 banner: grunt.file.read("course_index.html"),
                 process: function(src, filepath) {
-                    var viewName = path.basename(filepath, path.extname(filepath));
+                    var containerDir = path.basename(path.dirname(filepath));
+                    var prefix = "component!";
+                    if (containerDir === "views") {
+                        prefix = "view!";
+                    }
+                    var name = path.basename(filepath, path.extname(filepath));
                     return EOL +
-                           "<script type='text/html' id='" + viewName + "'>" +
-                              src +
+                           "<script id='" + prefix + name + "' " +
+                           "type='text/html' class='component' >" +
+                                src +
                            "</script>"
                 },
             },
             client: {
                 files: [{
-                    src: ["views/*.html"],
+                    src: ["components/**/*.html"],
                     dest: "distr/client/course_index.html"
                 }],
             }
@@ -81,11 +95,16 @@ module.exports = function (grunt) {
         copy: {
             client: {
                 files: [
-                    { expand: false, src: "index.html", dest: "distr/client/index.html" },
                     { expand: true, flatten: true, src: "styles/cursors/*", dest: "distr/client/cursors/" },
                     { expand: true, flatten: true, src: "styles/fonts/*", dest: "distr/client/fonts/" },
                     // 3rdparty scripts below
                     { expand: false, src: "node_modules/knockout/build/output/knockout-latest.js", dest: "distr/client/3rdparty/knockout-latest.js" },
+                    { expand: false, src: "node_modules/q/q.js", dest: "distr/client/3rdparty/q.js" },
+                ]
+            },
+            resources: {
+                files: [
+                    { expand: true, src: "resources/", dest: "distr/client/resources/" },
                 ]
             },
             "system-index": {
@@ -114,17 +133,32 @@ module.exports = function (grunt) {
         clean: {
             server: ["distr/server/"],
             client: ["distr/client/"],
+        },
+        nodemon: {
+            dev: {
+                script: "distr/server/main.js"
+            },
+            options: {
+                watch: ["distr/server/"],
+                env: {
+                    PORT: "8080"
+                }
+            }
+        },
+        concurrent: {
+            watchers: {
+                tasks: ["nodemon", "watch"],
+                options: {
+                    logConcurrentOutput: true
+                }
+            }
         }
     });
 
-    require('load-grunt-tasks')(grunt);
-    
-    grunt.event.on('watch', function(action, filepath, target) {
-        var tasks = settings[target + "Tasks"];
-        grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
-        grunt.config(tasks, filepath);
-    });
+    require("load-grunt-tasks")(grunt);
 
+    // Alias common tasks
+    grunt.registerTask("run", ["concurrent:watchers"]);
     grunt.registerTask("test", ["mochaTest"]);
     grunt.registerTask("lint", ["tslint"]);
 
@@ -139,7 +173,7 @@ module.exports = function (grunt) {
         else if (validConfigurations.indexOf(configuration) < 0) {
             grunt.fail.fatal("Invalid configuration!");
         }
-        
+
         if (!platform) {
             platforms = validPlatforms;
         }

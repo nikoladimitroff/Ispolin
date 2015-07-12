@@ -3,7 +3,7 @@
 import restify = require("restify");
 
 "use strict";
-export class Server {
+export default class Server {
     constructor() {
         this.app = restify.createServer({
             name: "Unnamed"
@@ -12,6 +12,7 @@ export class Server {
     }
 
     public listen(): void {
+        console.log("Server started!");
         this.app.listen(8080);
     }
 
