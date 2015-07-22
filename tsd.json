@@ -28,6 +28,9 @@
     },
     "knockout/knockout.d.ts": {
       "commit": "304a25197990aeabf8e9fd030ad927ed011b9e83"
+    },
+    "mongoose/mongoose.d.ts": {
+      "commit": "918c7fa63cefd5e3a2e12c94f8ccc69f813b653c"
     }
   }
 }

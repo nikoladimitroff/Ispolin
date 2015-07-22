@@ -1,18 +1,34 @@
-/// <reference path="../../typings/restify/restify.d.ts" />
+"use strict";
+import fs = require("fs");
 
 import restify = require("restify");
+import bunyan = require("bunyan");
 
-"use strict";
+import DataAccessLayer from "./data_access_layer";
+import { SchemaModels } from "./schemas";
+
+import { Routes } from "./routes/users";
+
+type ICourseInfo = SchemaModels.ICourseInfo;
+type IUser = SchemaModels.IUser;
+
+
 export default class Server {
+    public logger: bunyan.Logger;
+    public dal: DataAccessLayer;
+
+    private app: restify.Server;
+
     constructor() {
-        this.app = restify.createServer({
-            name: "Unnamed"
-        });
+        this.app = restify.createServer({ name: "Unnamed" });
+        this.logger = bunyan.createLogger({ name: "Unnamed" });
+        this.dal = new DataAccessLayer("mongodb://localhost/system-data",
+                                       this.logger);
         this.setupRouting();
     }
 
     public listen(): void {
-        console.log("Server started!");
+        this.logger.info("Server started!");
         this.app.listen(8080);
     }
 
@@ -20,23 +36,21 @@ export default class Server {
         let courses: restify.RequestHandler = (req: restify.Request,
                                                res: restify.Response,
                                                next: restify.Next) => {
-            let availableCourses = {
-                "test": {
-                    link: "course_index.html",
-                    description: "Testing testy for testing purposy."
-                },
-                "nonexistent": {
-                    link: "http://example.com",
-                    description: "Example madafaka."
-                },
-                "coherent labs": {
-                    link: "http://coherent-labs.com",
-                    description: "Coherent labs' Being Awesome 101"
-                }
-            };
-            res.send(200, availableCourses);
+            let availableCourses = SchemaModels.Course.find({}).exec();
+            let onSuccess = (result: ICourseInfo[]) => res.send(200, result);
+            availableCourses.then(onSuccess, this.dal.onError);
         };
         this.app.get("/api/courses/", courses);
+
+        let users = new Routes.Users();
+        this.app.get("/api/users/", users.handleRequest.bind(users));
+
+        let lectures: restify.RequestHandler = (req: restify.Request,
+                                                res: restify.Response,
+                                                next: restify.Next) => {
+            res.send(200, fs.readdirSync("distr/client/lectures"));
+        };
+        this.app.get("/api/lectures/", lectures);
 
         // Static files are added last as they match every request
         this.app.get(".*", restify.serveStatic({
@@ -44,5 +58,4 @@ export default class Server {
             default: "index.html"
         }));
     }
-    private app: restify.Server;
 }

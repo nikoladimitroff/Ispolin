@@ -23,9 +23,9 @@ module.exports = function (grunt) {
                 files: "src/**/*.ts",
                 tasks: settings.tsTasks,
             },
-            resources: {
-                files: "resources/*",
-                tasks: ["copy:resources"]
+            content: {
+                files: ["resources/*", "lectures/*"],
+                tasks: ["copy:resources", "copy:lectures"]
             },
             libs: {
                 files: ["styles/fonts/*", "styles/cursors/*"],
@@ -45,25 +45,37 @@ module.exports = function (grunt) {
         ts: {
             options: {
                 module: "commonjs",
-                fast: "never"
+                fast: "never",
+                noImplicitAny: true,
             },
             debug: {
                 files: [
                     // index.ts is only used on the main page
-                    { src: ["src/client/**/*.ts", "!src/client/index.ts"],
-                      dest: "distr/client/app.js" },
                     { src: ["src/client/index.ts"], dest: "distr/client/index.js" },
-                    { src: ["src/server/**/*.ts"], dest: "distr/server" }
+                    { src: [
+                        "src/client/**/*.ts",
+                        "src/common/**/*.ts",
+                        "!src/client/index.ts"
+                      ],
+                      dest: "distr/client/app.js"
+                    },
+                    // Typescript will see that files in src/server are depedent
+                    // on files in src/common and will put 'em in correct dirs
+                    { src: ["src/server/**/*.ts"], dest: "distr/" },
                 ],
                 inlineSources: true,
                 preserveConstEnums: true
             },
             release: {
                 files: [
-                    { src: ["src/client/**/*.ts", "!src/client/**/index.ts"],
+                    { src: "src/client/index.ts", dest: "distr/client/index.js" },
+                    { src: [
+                        "src/client/**/*.ts",
+                        "src/common/**/*.ts",
+                        "!src/client/index.ts"
+                      ],
                       dest: "distr/client/app.js" },
-                    { src: ["src/client/**/index.ts"], dest: "distr/client/index.js" },
-                    { src: ["src/server/**/*.ts"], dest: "distr/server" }
+                    { src: ["src/server/**/*.ts"], dest: "distr/" },
                 ],
                 sourceMap: false
             }
@@ -104,7 +116,12 @@ module.exports = function (grunt) {
             },
             resources: {
                 files: [
-                    { expand: true, src: "resources/", dest: "distr/client/resources/" },
+                    { expand: true, flatten: true, src: "resources/*", dest: "distr/client/resources/" },
+                ]
+            },
+            lectures: {
+                files: [
+                    { expand: true, flatten: true, src: "lectures/*", dest: "distr/client/lectures/" },
                 ]
             },
             "system-index": {
@@ -127,11 +144,11 @@ module.exports = function (grunt) {
                 src: ["src/client/**/*.ts"]
             },
             server: {
-                src: ["src/server/**/*.ts"]
+                src: ["src/server/**/*.ts", "src/common/**/*.ts"]
             }
         },
         clean: {
-            server: ["distr/server/"],
+            server: ["distr/server/", "distr/common/"],
             client: ["distr/client/"],
         },
         nodemon: {
@@ -139,17 +156,42 @@ module.exports = function (grunt) {
                 script: "distr/server/main.js"
             },
             options: {
-                watch: ["distr/server/"],
+                watch: ["distr/", "!distr/client"],
                 env: {
                     PORT: "8080"
                 }
             }
         },
         concurrent: {
-            watchers: {
+            "run-server": {
                 tasks: ["nodemon", "watch"],
                 options: {
                     logConcurrentOutput: true
+                }
+            }
+        },
+        shell: {
+            mongodb: {
+                command: 'mongod --dbpath ./data/db --port 27017',
+                options: {
+                    stdout: true,
+                    stderr: true,
+                    failOnError: true,
+                    execOptions: {
+                        cwd: '.'
+                    }
+                }
+            },
+            "repopulate-db": {
+                command: 'node distr/server/populate_test_data.js | bunyan',
+                options: {
+                    stdout: true,
+                    stderr: true,
+                    failOnError: true,
+                    execOptions: {
+                        cwd: '.',
+                        timeout: 1000
+                    }
                 }
             }
         }
@@ -158,15 +200,17 @@ module.exports = function (grunt) {
     require("load-grunt-tasks")(grunt);
 
     // Alias common tasks
-    grunt.registerTask("run", ["concurrent:watchers"]);
+    grunt.registerTask("run", ["concurrent:run-server"]);
+    grunt.registerTask("run-db", ["shell:mongodb"]);
+    grunt.registerTask("repopulate", ["shell:repopulate-db"]);
     grunt.registerTask("test", ["mochaTest"]);
     grunt.registerTask("lint", ["tslint"]);
 
     var validPlatforms = ["server", "client"];
     var validConfigurations = ["debug", "release"];
     grunt.registerTask("build", "Builds the entire app.", function (platform, configuration) {
-        var platforms = [];
-        var configurations = [];
+        var platforms = [platform];
+        var configurations = [configuration];
         if (!configuration) {
             configurations = validConfigurations;
         }
@@ -184,7 +228,7 @@ module.exports = function (grunt) {
             var platform = platforms[i];
             for (var j = 0; j < configurations.length; j++) {
                 var clientTasks = [
-                    "lint",
+                    "lint:" + platform,
                     "mochaTest",
                     "clean:" + platform,
                     "copy:" + platform,
@@ -192,7 +236,7 @@ module.exports = function (grunt) {
                     "ts:" + configuration
                 ];
                 var serverTasks = [
-                    "lint",
+                    "lint:" + platform,
                     "mochaTest",
                     "clean:" + platform,
                     "ts:" + configuration

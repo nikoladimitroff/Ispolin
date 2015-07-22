@@ -1,37 +1,27 @@
 /// <reference path="../../typings/knockout/knockout.d.ts" />
 /// <reference path="./utils.ts" />
+/// <reference path="../common/models.ts" />
 
-class CourseInfo {
-    public name: string;
-    public link: string;
-    public description: string;
+"use strict";
 
-    constructor(name: string, link: string, description: string) {
-        this.name = name;
-        this.link = link;
-        this.description = description;
-    }
-}
+type ICourseInfo = Models.ICourseInfo;
 
 class Viewmodel {
-    public availableCourses: KnockoutObservableArray<CourseInfo>;
+    public availableCourses: KnockoutObservableArray<ICourseInfo>;
 
     constructor() {
-        this.availableCourses = ko.observableArray<CourseInfo>();
+        this.availableCourses = ko.observableArray<ICourseInfo>();
     }
 }
 
 let viewmodel = new Viewmodel();
-type CourseMap = { [name: string]: {link: string, description: string} };
 
-let initializeBindings = (courses: CourseMap) => {
-   Object.keys(courses).forEach((course: string) => {
-        let info = new CourseInfo(course,
-                                  courses[course].link,
-                                  courses[course].description);
-        viewmodel.availableCourses.push(info);
-   });
-   ko.applyBindings(viewmodel);
+let initializeBindings = (courses: ICourseInfo[]) => {
+    console.log("JUST Received", courses);
+    for (let courseInfo of courses) {
+        viewmodel.availableCourses.push(courseInfo);
+    }
+    ko.applyBindings(viewmodel);
 };
 
 Utils.loadJSON("/api/courses", "GET")

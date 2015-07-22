@@ -1,6 +1,8 @@
 {
     "mainMenu": {
         "home": "Home",
-        "resources": "Resources"
+        "lectures": "Lectures",
+        "resources": "Resources",
+        "standings": "Standings"
     }
 }

@@ -1,10 +1,8 @@
 xcopy githooks\* .git\hooks\ /s /y
 
-mkdir distr
-cd distr
-mkdir server
-mkdir client
-cd ..
+mkdir distr\server
+mkdir distr\client
+mkdir data\db
 
 npm install
 npm install grunt-cli -g
