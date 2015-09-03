@@ -1,20 +1,43 @@
 /// <reference path="../../../typings/knockout/knockout.d.ts" />
-/// <reference path="./link.ts" />
+/// <reference path="../../../typings/reveal/reveal.d.ts" />
+/// <reference path="./common.ts" />
 /// <reference path="../utils.ts" />
 
-module PartialViewmodels {
+namespace PartialViewmodels {
     "use strict";
+    interface IHighlightJS {
+        initHighlightingOnLoad(): void;
+    }
+    declare var hljs: IHighlightJS;
+
     export class Lectures {
-        public lectures: KnockoutObservableArray<Link>;
+        private lectures: KnockoutObservableArray<Clickable>;
+        private activePresentation: KnockoutObservable<string>;
+        private activePresentationSourceFile: KnockoutComputed<string>;
+        private presentationFrame: HTMLIFrameElement;
 
         constructor() {
-            this.lectures = ko.observableArray<Link>();
+            let frame = document.getElementById("presentation-frame");
+            this.presentationFrame = <HTMLIFrameElement>frame;
+            this.lectures = ko.observableArray<Clickable>();
+            this.activePresentation = ko.observable(null);
+            this.activePresentationSourceFile = ko.computed(() => {
+                if (!this.activePresentation()) {
+                    return null;
+                }
+                return Config.instance.courseInfo.lecturesDir +
+                       this.activePresentation();
+            });
             this.init();
         }
 
         private makeReadable(name: string): string {
             // Remove the numbering and extension
-            let cleanName = name.match(/\w+\.(.+)\.md/)[1];
+            let regexMatch = name.match(/\w+\.(.+)\.md/);
+            if (!regexMatch) {
+                return "ERROR: A lecture name is ill-formatted - " + name;
+            }
+            let cleanName = regexMatch[1];
             // Replace all dots with underscores for easier splitting
             cleanName = cleanName.replace(".", "_");
             let separated = cleanName.split("_").join(" ");
@@ -24,17 +47,32 @@ module PartialViewmodels {
                    separated.substring(firstLetterIndex + 1);
         }
 
+        private getClickHandler(lecture: string): ClickHandler {
+            return (_: any, eventArgs: MouseEvent): void => {
+                eventArgs.preventDefault();
+                eventArgs.stopPropagation();
+                this.activePresentation(lecture);
+            };
+        }
+
+        private changePresentation(newPresentation: string): void {
+            localStorage.setItem("activePresentation", newPresentation);
+            this.presentationFrame.contentWindow.location.reload();
+        }
+
         private init(): void {
             let initializeBindings = (lectures: string[]) => {
                 for (let lecture of lectures) {
                     this.lectures.push({
                         name: this.makeReadable(lecture),
-                        link: `lectures/${lecture}`
+                        onclick: this.getClickHandler(lecture)
                     });
                 }
             };
             Utils.loadJSON("/api/lectures", "GET")
                  .done(initializeBindings);
+            this.activePresentationSourceFile
+                .subscribe(this.changePresentation.bind(this));
         }
     }
 }

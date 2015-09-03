@@ -1,39 +1,61 @@
 /// <reference path="../../typings/restify/restify.d.ts" />
 /// <reference path="../../typings/bunyan/bunyan.d.ts" />
+/// <reference path="../../typings/mongoose/mongoose.d.ts" />
+
+/// <reference path="../common/definitions.ts" />
 
 "use strict";
 import bunyan = require("bunyan");
+import mongoose = require("mongoose");
+import Q = require("q");
 
 import DataAccessLayer from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
-function clear(dal: DataAccessLayer): void {
-    SchemaModels.Course.remove({}, dal.onError);
-    SchemaModels.User.remove({}, dal.onError);
-    SchemaModels.CourseData.remove({}, dal.onError);
+type MongooseModel = mongoose.Model<any>;
+function clear(): Q.Promise<any> {
+    let databases = ["Course", "User", "CourseData"];
+    let promises: Q.Promise<any>[] = [];
+    for (let i = 0; i < databases.length; i++) {
+        let mongoPromise = DataAccessLayer.instance.promiseForMongo();
+        let mappable = <IMappable<MongooseModel>>(<any>SchemaModels);
+        let model = <MongooseModel>(mappable[databases[i]]);
+        model.remove({}, mongoPromise.callback);
+    }
+    return Q.all(promises);
 }
 
-function populateCourses(dal: DataAccessLayer): void {
+function saveAll(data: mongoose.Document[]): Q.Promise<any> {
+    let promises: Q.Promise<any>[] = [];
+    for (let obj of data) {
+        let mongoPromise = DataAccessLayer.instance.promiseForMongo();
+        obj.save(mongoPromise.callback);
+        promises.push(mongoPromise.promise);
+    }
+    return Q.all(promises);
+}
+
+function populateCourses(): Q.Promise<any> {
     let courses: SchemaModels.ICourseInfo[] = [
         new SchemaModels.Course({
-            name: "Course Test",
+            name: "Game Engine Architecture",
+            shortName: "GEA",
+            lecturesDir: "/lectures/GEA/",
             link: "course_index.html",
-            description: "Testing testy for testing purposy."
+            description: "An gentle introduction to the topic of " +
+                         "architecturing game engines."
         }),
         new SchemaModels.Course({
-            name: "Because CL!",
+            name: "Coherent Labs rocks!",
+            shortName: "CLR",
             link: "http://coherent-labs.com",
             description: "Coherent labs' Being Awesome 101"
         })
     ];
-    for (let course of courses) {
-        course.save(dal.onError);
-    }
+    return saveAll(courses);
 }
 
-
-
-function populateUsers(dal: DataAccessLayer): void {
+function populateUsers(): Q.Promise<any> {
     let users: SchemaModels.IUser[] = [
         new SchemaModels.User({
             name: "Nikola Dimitroff",
@@ -46,14 +68,11 @@ function populateUsers(dal: DataAccessLayer): void {
             fn: "54321"
         })
     ];
-    for (let user of users) {
-        user.save(dal.onError);
-    }
+    return saveAll(users);
 }
 
-function fillInCourseData(dal: DataAccessLayer,
-                          courseInfo: SchemaModels.ICourseInfo,
-                          users: SchemaModels.IUser[]): void {
+function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
+                          users: SchemaModels.IUser[]): Q.Promise<any> {
     let courseData: SchemaModels.ICourseData[] = [
         new SchemaModels.CourseData({
             courseId: courseInfo._id,
@@ -73,16 +92,14 @@ function fillInCourseData(dal: DataAccessLayer,
             ]
         })
     ];
-    for (let data of courseData) {
-        data.save(dal.onError);
-    }
+    return saveAll(courseData);
 }
 
-function populateCourseData(dal: DataAccessLayer): void {
+function populateCourseData(): Q.Promise<any> {
     let users: SchemaModels.IUser[];
     let courseInfo: SchemaModels.ICourseInfo;
     let userPromise = SchemaModels.User.find({}).exec();
-    let coursePromise = SchemaModels.Course.findOne({name: "Course Test"})
+    let coursePromise = SchemaModels.Course.findOne({short: "GAE1"})
                                            .exec()  ;
     userPromise.then((data: SchemaModels.IUser[]) => {
         users = data;
@@ -90,26 +107,42 @@ function populateCourseData(dal: DataAccessLayer): void {
     coursePromise.then((data: SchemaModels.ICourseInfo) => {
         courseInfo = data;
     });
+    let deferred = Q.defer<any>();
     userPromise.then(() => {
-        coursePromise.then(fillInCourseData.bind(undefined, courseInfo, users));
+        coursePromise.then(() => {
+            fillInCourseData(courseInfo, users);
+            deferred.resolve(undefined);
+        });
     });
+    return deferred.promise;
 }
 
-function populateData(dal: DataAccessLayer): void {
-    populateCourses(dal);
-    populateUsers(dal);
-    populateCourseData(dal);
+function populateData(): Q.Promise<any> {
+    return Q.all([
+        populateCourses(),
+        populateUsers(),
+        populateCourseData(),
+    ]);
 }
 
 function main(): void {
     let logger = bunyan.createLogger({ name: "Unnamed" });
     let dal = new DataAccessLayer("mongodb://localhost/system-data", logger);
 
+    let postClean = () => {
+        logger.info("Repopulating with default data...");
+        return populateData();
+    };
+    let postPopulate = () => {
+        logger.info("Done!");
+    };
+    let onError = (error: string) => {
+        logger.error("FAILED!" + error);
+    };
     logger.info("Cleaning up db...");
-    clear(dal);
-    logger.info("Repopulating with default data...");
-    populateData(dal);
-    logger.info("Done!");
+    clear()
+    .then(postClean, onError)
+    .then(postPopulate, onError).done(() => process.exit());
 }
 
 if (require.main === module) {

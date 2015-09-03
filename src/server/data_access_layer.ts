@@ -1,9 +1,17 @@
 /// <reference path="../../typings/bunyan/bunyan.d.ts" />
 /// <reference path="../../typings/mongoose/mongoose.d.ts" />
+/// <reference path="../../typings/q/Q.d.ts" />
 
 "use strict";
 import bunyan = require("bunyan");
 import mongoose = require("mongoose");
+import Q = require("q");
+
+
+interface IMongoPromise {
+    promise: Q.Promise<any>;
+    callback: (err: any) => void;
+}
 
 export default class DataAccessLayer {
     public static instance: DataAccessLayer;
@@ -32,4 +40,19 @@ export default class DataAccessLayer {
             this.logger.error("A DB error occurred! %s", message);
         }
     };
+
+    public promiseForMongo(): IMongoPromise {
+        let deferred = Q.defer<boolean>();
+        return {
+            promise: deferred.promise,
+            callback: (error: any): void => {
+                this.onErrorCallback(error);
+                if (error) {
+                    deferred.reject(error);
+                } else {
+                    deferred.resolve(true);
+                }
+            }
+        };
+    }
 }

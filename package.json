@@ -9,7 +9,7 @@
     "express": "^4.10.1",
     "knockout": "^3.3.0",
     "mongoose": "^4.0.7",
-    "q": "^1.2.0",
+    "q": "^1.4.1",
     "restify": "^3.0.3"
   },
   "devDependencies": {

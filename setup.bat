@@ -5,7 +5,8 @@ mkdir distr\client
 mkdir data\db
 
 npm install
-npm install grunt-cli -g
-npm install tsd -g
+npm install -g grunt-cli
+npm install -g tsd
+npm install -g bunyan
 tsd reinstall -so
 grunt build

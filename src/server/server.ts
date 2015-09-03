@@ -42,13 +42,26 @@ export default class Server {
         };
         this.app.get("/api/courses/", courses);
 
+        let courseInfo: restify.RequestHandler = (req: restify.Request,
+                                                  res: restify.Response,
+                                                  next: restify.Next) => {
+            let defaultCourse = SchemaModels.Course
+                                            .findOne({ shortName: "GEA" })
+                                            .exec();
+            let onSuccess = (result: ICourseInfo) => {
+                res.send(200, result);
+            };
+            defaultCourse.then(onSuccess, this.dal.onError);
+        };
+        this.app.get("/api/course-info/", courseInfo);
+
         let users = new Routes.Users();
         this.app.get("/api/users/", users.handleRequest.bind(users));
 
         let lectures: restify.RequestHandler = (req: restify.Request,
                                                 res: restify.Response,
                                                 next: restify.Next) => {
-            res.send(200, fs.readdirSync("distr/client/lectures"));
+            res.send(200, fs.readdirSync("distr/client/lectures/GEA/"));
         };
         this.app.get("/api/lectures/", lectures);
 

@@ -3,7 +3,7 @@
 /// <reference path="../utils.ts" />
 
 type IUser = Models.IUser;
-module PartialViewmodels {
+namespace PartialViewmodels {
     "use strict";
 
     interface IUserGrade {

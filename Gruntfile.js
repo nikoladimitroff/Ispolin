@@ -24,8 +24,8 @@ module.exports = function (grunt) {
                 tasks: settings.tsTasks,
             },
             content: {
-                files: ["resources/*", "lectures/*"],
-                tasks: ["copy:resources", "copy:lectures"]
+                files: ["resources/**", "lectures/**"],
+                tasks: ["newer:copy:resources", "newer:copy:lectures"]
             },
             libs: {
                 files: ["styles/fonts/*", "styles/cursors/*"],
@@ -109,7 +109,8 @@ module.exports = function (grunt) {
                 files: [
                     { expand: true, flatten: true, src: "styles/cursors/*", dest: "distr/client/cursors/" },
                     { expand: true, flatten: true, src: "styles/fonts/*", dest: "distr/client/fonts/" },
-                    // 3rdparty scripts below
+                    { expand: true, src: "3rdparty/**", dest: "distr/client/" },
+                    // 3rdparty scripts installed via npm below
                     { expand: false, src: "node_modules/knockout/build/output/knockout-latest.js", dest: "distr/client/3rdparty/knockout-latest.js" },
                     { expand: false, src: "node_modules/q/q.js", dest: "distr/client/3rdparty/q.js" },
                 ]
@@ -121,7 +122,7 @@ module.exports = function (grunt) {
             },
             lectures: {
                 files: [
-                    { expand: true, flatten: true, src: "lectures/*", dest: "distr/client/lectures/" },
+                    { expand: true, src: "lectures/**", dest: "distr/client/" },
                 ]
             },
             "system-index": {

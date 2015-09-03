@@ -1,6 +1,8 @@
 /// <reference path="../../typings/knockout/knockout.d.ts" />
-/// <reference path="./partial_viewmodels/link.ts" />
+/// <reference path="./partial_viewmodels/common.ts" />
 /// <reference path="./utils.ts" />
+/// <reference path="./config.ts" />
+
 
 type Link = PartialViewmodels.Link;
 
@@ -59,9 +61,9 @@ let initializeBindings = function (translation: ITranslationMap): void {
 };
 
 let main = (): void => {
+    Config.initialize();
+    Utils.loadJSON("/resources/translation.json").done(initializeBindings);
     registerComponents();
-    Utils.loadJSON("/resources/translation.json", "GET")
-         .done(initializeBindings);
 };
 
 document.addEventListener("DOMContentLoaded", main);

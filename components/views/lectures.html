@@ -1,4 +1,15 @@
 <h1>Lectures</h1>
+
 <ol data-bind="foreach: lectures">
-    <li><a data-bind="text: name, attr: { 'href': link }"></a></li>
-</ol> 
+    <li><a data-bind="text: name, click: onclick"></a></li>
+</ol>
+<iframe id="presentation-frame"
+        src="3rdparty/reveal.js/presentation-iframe.html"
+        seamless="seamless"
+        data-bind="if: activePresentationSourceFile() !== null"
+        width="1024"
+        height="768">
+</iframe>
+
+
+

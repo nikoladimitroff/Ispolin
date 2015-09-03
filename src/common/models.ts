@@ -1,8 +1,7 @@
-/// <reference path="../../typings/mongoose/mongoose.d.ts" />
-
 module Models {
     "use strict";
 
+    // REMEMBER TO CHANGE THE SCHEMAS.TS IF YOU MAKE CHANGES TO THE MODELS!
     export interface IResource {
         name: string;
         link: string;
@@ -10,6 +9,8 @@ module Models {
     }
 
     export interface ICourseInfo extends IResource {
+        shortName: string;
+        lecturesDir: string;
     }
 
     export interface IUser {

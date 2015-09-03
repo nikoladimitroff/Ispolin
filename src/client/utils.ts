@@ -5,7 +5,7 @@ module Utils {
 "use strict";
 
 export function loadJSON<T>(path: string,
-                            verb: string): Q.Promise<T> {
+                            verb: string = "GET"): Q.Promise<T> {
     let xhr = new XMLHttpRequest();
     let deferred = Q.defer<T>();
     xhr.onreadystatechange = function(): void {

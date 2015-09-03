@@ -7,6 +7,8 @@ module Schemas {
 
     export var course = new mongoose.Schema({
         name: { type: String, index: true },
+        shortName: { type: String, index: true },
+        lecturesDir: String,
         link: String,
         description: String
     });
