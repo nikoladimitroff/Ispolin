@@ -13,9 +13,10 @@ import DataAccessLayer from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
 type MongooseModel = mongoose.Model<any>;
-function clear(): Q.Promise<any> {
+type AnyPromise = Q.Promise<any>;
+function clear(): AnyPromise {
     let databases = ["Course", "User", "CourseData"];
-    let promises: Q.Promise<any>[] = [];
+    let promises: AnyPromise[] = [];
     for (let i = 0; i < databases.length; i++) {
         let mongoPromise = DataAccessLayer.instance.promiseForMongo();
         let mappable = <IMappable<MongooseModel>>(<any>SchemaModels);
@@ -25,17 +26,17 @@ function clear(): Q.Promise<any> {
     return Q.all(promises);
 }
 
-function saveAll(data: mongoose.Document[]): Q.Promise<any> {
-    let promises: Q.Promise<any>[] = [];
+function saveAll(data: mongoose.Document[]): AnyPromise {
+    let promises: AnyPromise[] = [];
     for (let obj of data) {
         let mongoPromise = DataAccessLayer.instance.promiseForMongo();
         obj.save(mongoPromise.callback);
         promises.push(mongoPromise.promise);
     }
-    return Q.all(promises);
+    return Q.when(Q.all(promises));
 }
 
-function populateCourses(): Q.Promise<any> {
+function populateCourses(): AnyPromise {
     let courses: SchemaModels.ICourseInfo[] = [
         new SchemaModels.Course({
             name: "Game Engine Architecture",
@@ -46,16 +47,16 @@ function populateCourses(): Q.Promise<any> {
                          "architecturing game engines."
         }),
         new SchemaModels.Course({
-            name: "Coherent Labs rocks!",
-            shortName: "CLR",
-            link: "http://coherent-labs.com",
-            description: "Coherent labs' Being Awesome 101"
+            name: "High Performance Computing",
+            shortName: "HPC",
+            link: "course_index.html",
+            description: "How to make your computer fly"
         })
     ];
     return saveAll(courses);
 }
 
-function populateUsers(): Q.Promise<any> {
+function populateUsers(): AnyPromise {
     let users: SchemaModels.IUser[] = [
         new SchemaModels.User({
             name: "Nikola Dimitroff",
@@ -72,19 +73,20 @@ function populateUsers(): Q.Promise<any> {
 }
 
 function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
-                          users: SchemaModels.IUser[]): Q.Promise<any> {
+                          users: SchemaModels.IUser[]): AnyPromise {
+    console.log("Filling inside", courseInfo, users);
     let courseData: SchemaModels.ICourseData[] = [
         new SchemaModels.CourseData({
-            courseId: courseInfo._id,
-            userId: users[0]._id,
+            course: courseInfo._id,
+            user: users[0]._id,
             results: [
                 { source: "Test 1", grade: 0.1, max: 0.15 },
                 { source: "Homework 1", grade: 0.2, max: 0.2 }
             ]
         }),
         new SchemaModels.CourseData({
-            courseId: courseInfo._id,
-            userId: users[1]._id,
+            course: courseInfo._id,
+            user: users[1]._id,
             results: [
                 { source: "Bonus 1", grade: 0.02, max: 0.02 },
                 { source: "Bonus 2", grade: 0.01, max: 0.02 },
@@ -95,37 +97,31 @@ function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
     return saveAll(courseData);
 }
 
-function populateCourseData(): Q.Promise<any> {
-    let users: SchemaModels.IUser[];
-    let courseInfo: SchemaModels.ICourseInfo;
+function populateCourseData(): AnyPromise {
     let userPromise = SchemaModels.User.find({}).exec();
-    let coursePromise = SchemaModels.Course.findOne({short: "GAE1"})
-                                           .exec()  ;
-    userPromise.then((data: SchemaModels.IUser[]) => {
-        users = data;
-    });
-    coursePromise.then((data: SchemaModels.ICourseInfo) => {
-        courseInfo = data;
-    });
-    let deferred = Q.defer<any>();
-    userPromise.then(() => {
-        coursePromise.then(() => {
-            fillInCourseData(courseInfo, users);
-            deferred.resolve(undefined);
-        });
-    });
-    return deferred.promise;
+    let coursePromise = SchemaModels.Course.find({}).exec();
+    let fillAllData = (users: SchemaModels.IUser[],
+                       courses: SchemaModels.ICourseInfo[]): AnyPromise => {
+        let promises: AnyPromise[] = [];
+        for (let courseInfo of courses) {
+            promises.push(fillInCourseData(courseInfo, users));
+        }
+        return Q.all(promises);
+    };
+    // Q.d.ts does not allow for spreading promises of different types
+    // We must cast the arguments to any
+    return Q.spread([userPromise, coursePromise],
+                    fillAllData as (x: any, y: any) => AnyPromise);
 }
 
-function populateData(): Q.Promise<any> {
+function populateData(): AnyPromise {
     return Q.all([
-        populateCourses(),
-        populateUsers(),
-        populateCourseData(),
-    ]);
+            populateCourses(),
+            populateUsers()
+        ]).then(() => populateCourseData());
 }
 
-function main(): void {
+function main(): any {
     let logger = bunyan.createLogger({ name: "Unnamed" });
     let dal = new DataAccessLayer("mongodb://localhost/system-data", logger);
 

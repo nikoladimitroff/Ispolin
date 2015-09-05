@@ -10,3 +10,4 @@ npm install -g tsd
 npm install -g bunyan
 tsd reinstall -so
 grunt build
+grunt repopulate

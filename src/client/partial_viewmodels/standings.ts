@@ -28,7 +28,8 @@ namespace PartialViewmodels {
                     });
                 }
             };
-            Utils.loadJSON("/api/users", "GET")
+            let courseShortName = Config.instance.courseInfo.shortName;
+            Utils.loadJSON(`/api/users/${courseShortName}`, "GET")
                  .done(initializeBindings);
         }
     }

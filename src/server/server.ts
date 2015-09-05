@@ -42,26 +42,29 @@ export default class Server {
         };
         this.app.get("/api/courses/", courses);
 
+        // When testing, alternate the below string to GEA or HPC
+        const FIXED_COURSE = "GEA";
         let courseInfo: restify.RequestHandler = (req: restify.Request,
                                                   res: restify.Response,
                                                   next: restify.Next) => {
-            let defaultCourse = SchemaModels.Course
-                                            .findOne({ shortName: "GEA" })
-                                            .exec();
+            let queryCourse = SchemaModels.Course
+                                          .findOne({ shortName: FIXED_COURSE })
+                                          .exec();
             let onSuccess = (result: ICourseInfo) => {
                 res.send(200, result);
             };
-            defaultCourse.then(onSuccess, this.dal.onError);
+            queryCourse.then(onSuccess, this.dal.onError);
         };
         this.app.get("/api/course-info/", courseInfo);
 
         let users = new Routes.Users();
-        this.app.get("/api/users/", users.handleRequest.bind(users));
+        this.app.get("/api/users/:course", users.handleRequest.bind(users));
 
         let lectures: restify.RequestHandler = (req: restify.Request,
                                                 res: restify.Response,
                                                 next: restify.Next) => {
-            res.send(200, fs.readdirSync("distr/client/lectures/GEA/"));
+            const dirPath = `distr/client/lectures/${FIXED_COURSE}/`;
+            res.send(200, fs.readdirSync(dirPath));
         };
         this.app.get("/api/lectures/", lectures);
 

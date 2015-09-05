@@ -26,14 +26,9 @@ module Models {
         max: number;
     }
 
-    export interface IUserData {
-        class: string;
-        results: IGrade[];
-    }
-
     export interface ICourseData {
-        courseId: any;
-        studentId: any;
-        data: IUserData;
+        course: any;
+        user: any;
+        results: IGrade[];
     }
 }

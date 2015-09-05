@@ -18,24 +18,14 @@ module Schemas {
         fn: { type: String, index: true }
     });
 
-    user.virtual("totalGrade").get(function (): number {
-        return 1;
-    });
-    user.set("toJSON", {
-        virtuals: true
-    });
-
     export var courseData = new mongoose.Schema({
-        courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        data: {
-            class: String,
-            results: [{
-                source: String,
-                grade: String,
-                max: String
-            }]
-        }
+        course: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        results: [{
+            source: String,
+            grade: Number,
+            max: Number
+        }]
     });
 }
 

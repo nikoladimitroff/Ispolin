@@ -7,10 +7,12 @@
 type Link = PartialViewmodels.Link;
 
 class Viewmodel {
+    public courseName: KnockoutObservable<string>;
     public mainMenu: KnockoutObservableArray<Link>;
     public activeView: KnockoutObservable<string>;
 
     constructor() {
+        this.courseName = ko.observable<string>();
         this.mainMenu = ko.observableArray<Link>();
         this.activeView = ko.observable("view!home");
     }
@@ -60,8 +62,12 @@ let initializeBindings = function (translation: ITranslationMap): void {
     ko.applyBindings(viewmodel);
 };
 
+let setCourseName = function (): void {
+    viewmodel.courseName(Config.instance.courseInfo.name);
+};
+
 let main = (): void => {
-    Config.initialize();
+    Config.initialize().done(setCourseName);
     Utils.loadJSON("/resources/translation.json").done(initializeBindings);
     registerComponents();
 };

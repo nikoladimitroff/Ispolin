@@ -9,9 +9,9 @@ class Config {
 
     public courseInfo: Models.ICourseInfo;
 
-    public static initialize(): void {
+    public static initialize(): Q.Promise<any> {
         Config.instance = new Config();
-        Config.instance.loadData();
+        return Q.all([Config.instance.loadData()]);
     }
 
     private loadData(): Q.Promise<Models.ICourseInfo> {
