@@ -12,6 +12,7 @@ Open your terminal and run:
 
 ```
 git clone git@github.com:nikoladimitroff/Ispolin.git
+cd Ispolin
 setup.bat
 grunt run-db
 grunt run
