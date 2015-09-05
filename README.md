@@ -11,7 +11,7 @@ You need to have Nodejs (> 0.12) and MongoDB.
 Open your terminal and run:
 
 ```
-git clone git@github.com:nikoladimitroff/repo
+git clone git@github.com:nikoladimitroff/Ispolin.git
 setup.bat
 grunt run-db
 grunt run
