@@ -34,6 +34,24 @@
     },
     "reveal/reveal.d.ts": {
       "commit": "b2345aee407127928f247165c91e18bd7dc1a14a"
+    },
+    "passport/passport.d.ts": {
+      "commit": "b3aeee64552e324581fdbe0926f4a96e981e451b"
+    },
+    "serve-static/serve-static.d.ts": {
+      "commit": "b3aeee64552e324581fdbe0926f4a96e981e451b"
+    },
+    "mime/mime.d.ts": {
+      "commit": "b3aeee64552e324581fdbe0926f4a96e981e451b"
+    },
+    "express/express.d.ts": {
+      "commit": "b3aeee64552e324581fdbe0926f4a96e981e451b"
+    },
+    "passport-local/passport-local.d.ts": {
+      "commit": "b3aeee64552e324581fdbe0926f4a96e981e451b"
+    },
+    "ace/ace.d.ts": {
+      "commit": "af5b8275d1f2b92738b93fddabc461fc20c553a1"
     }
   }
 }

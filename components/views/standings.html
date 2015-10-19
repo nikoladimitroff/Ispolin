@@ -2,16 +2,16 @@
 <table>
     <thead>
         <tr>
-            <th>Place</th>
+            <th class="number">Place</th>
             <th>Name</th>
-            <th>Grade</th>
+            <th class="number">Grade</th>
         </tr>
     </thead>
     <tbody data-bind="foreach: standings">
         <tr>
-            <td data-bind="text: $index() + 1"></td>
+            <td data-bind="text: $index() + 1" class="number"></td>
             <td data-bind="text: name"></td>
-            <td data-bind="text: totalGrade.toFixed(3)"></td>
+            <td data-bind="text: totalGrade.toFixed(3)" class="number"></td>
         </tr>
     </tbody>
-</ol> 
+</ol>

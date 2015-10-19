@@ -1,0 +1,99 @@
+@import "./theme";
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background-color: @background-color;
+    color: @text-body-color;
+    font-family: @text-body-font-family;
+}
+
+h1, h2 {
+    color: @text-heading-color;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+content {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+.disabled {
+    &:hover {
+        cursor: not-allowed;
+    }
+}
+
+table {
+    border-collapse: collapse;
+    font-size: 1.1em;
+}
+
+th {
+    font-size: 1.1em;
+}
+
+td, th {
+    text-align: left;
+    padding-left: 1em;
+    max-width: 20em;
+}
+
+td.number,
+th.number {
+    text-align: right;
+    padding-right: 1em;
+}
+
+thead tr:first-child {
+    background-color: @slick-color-2;
+}
+
+tr:nth-child(odd) {
+    background-color: @slick-color-1;
+}
+
+tr:nth-child(even) {
+    background-color: @slick-color-2;
+}
+
+button {
+    position: relative;
+    padding: 0 1em;
+    border: none;
+    background-color: @overlay-background-color;
+    color: @overlay-text-body-color;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    overflow: hidden;
+    transition: opacity 0.1s 0.5s, color 0.15s;
+    width: 300px;
+    height: 80px;
+    line-height: 80px;
+    &:hover {
+        color: @fancy-color-1;
+    }
+}
+
+button[type=submit] {
+    // Not all browsers support unset and initial, so use several rules
+    width: initial;
+    width: unset;
+    height: initial;
+    height: unset;
+    line-height: initial;
+    line-height: unset;
+}

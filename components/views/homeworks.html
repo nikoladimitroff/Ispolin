@@ -1,0 +1,31 @@
+<h1>Available homeworks</h1>
+
+<ul id="available-homeworks-list"
+    data-bind="foreach: availableHomeworks">
+    <li>
+        <h3 data-bind="text: title"></h3>
+        <label class="language-label">
+            Language: <span data-bind="text: programmingLanguage"></span>
+        </label>
+        <p data-bind="text: description"></p>
+        <div class="morph-button morph-button-overlay morph-button-fixed">
+            <button type="button">Complete</button>
+            <div class="morph-content">
+                <div>
+                    <div class="content-style-overlay content-style-form">
+                        <i class="close-button fa fa-2x fa-close"></i>
+                        <h2 data-bind="text: title"></h2>
+                        <p data-bind="text: description"></p>
+                        <form data-bind="submit: $parent.submit.bind($parent, title)">
+                            <label>Write your code here</label>
+                            <textarea data-bind="textInput: $parent.homeworkContents"></textarea>
+                            <p><button type="submit">Submit</button></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
+
+<span data-bind="template: { afterRender: postRender }"></span>

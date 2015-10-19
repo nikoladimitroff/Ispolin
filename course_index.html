@@ -2,16 +2,20 @@
 <html>
 <head>
 <title>Ispolin</title>
+<link rel="stylesheet" href="3rdparty/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="3rdparty/vex.js/vex.css" />
+<link rel="stylesheet" href="3rdparty/vex.js/vex-theme-wireframe.css" />
 <link rel="stylesheet" href="main.css"></link>
 </head>
 <body>
-<h1>Welcome to <span data-bind="text: courseName"></span>!</h1>
-<nav>
+<nav id="main-menu">
     <ul data-bind="foreach: mainMenu">
-        <li>
-            <a data-bind="text: name,
-                          attr: {href: link},
+        <li data-bind="css: { 'active-tab': Utils.stringEndsWith($root.activeView(), link),
+        disabled: requiresLogin && !$root.isLoggedIn() }">
+            <a data-bind="attr: {href: link},
                           click: $root.changeView.bind($root, link)">
+                <i data-bind="attr: { class: 'fa fa-' + icon }"></i>
+                <span data-bind="text: name"></span>
             </a>
         </li>
     </ul>
@@ -20,6 +24,12 @@
 </content>
 <script src="3rdparty/knockout-latest.js"></script>
 <script src="3rdparty/q.js"></script>
+
+<script src="3rdparty/jquery-2.1.4.min.js"></script>
+<script src="3rdparty/vex.js/vex.combined.min.js"></script>
+<script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
+<script src="3rdparty/ace/ace.js"></script>
+
 <script src="app.js"></script>
 </body>
 </html>

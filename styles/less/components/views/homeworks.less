@@ -1,0 +1,51 @@
+#available-homeworks-list {
+    list-style-type: none;
+    padding-left: 0;
+    // The list overflows and this breaks padding-right on the parent element
+    // The only working solution so far is to use margin-right equal to the parent padding
+    &, & li {
+        margin-right: 2em;
+    }
+
+    li {
+        border-top: 2px solid @fancy-color-3;
+        &:last-child {
+            border-bottom: 2px solid @fancy-color-3;
+        }
+        padding: 0.5em;
+        position: relative;
+        .morph-button {
+            position: absolute;
+            right: 5em;
+            top: 1em;
+            margin: 0;
+        }
+    }
+    .content-style-overlay {
+        padding: 0;
+        p {
+            max-width: 900px;
+        }
+    }
+    .content-style-form form {
+        padding: 0;
+    }
+    .language-label {
+        margin: 0;
+    }
+
+    // Submitting screen
+    label {
+        margin: 0 5%;
+    }
+    textarea {
+        width: 90%;
+        height: 80vh;
+        margin: 0 5%;
+        display: block;
+        font-family: monospace;
+        font-size: 12px;
+        background-color: white;
+    }
+}
+

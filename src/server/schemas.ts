@@ -1,19 +1,26 @@
-/// <reference path="../common/models.ts" />
-
 import mongoose = require("mongoose");
+
+/// <reference path="../common/models.ts" />
 
 module Schemas {
     "use strict";
 
     export var course = new mongoose.Schema({
         name: { type: String, index: true },
+        passportHash: String,
         shortName: { type: String, index: true },
         lecturesDir: String,
         link: String,
-        description: String
+        description: String,
+        availableHomeworks: [{
+            title: String,
+            description: String,
+            programmingLanguage: String
+        }]
     });
     export var user = new mongoose.Schema({
         name: String,
+        passportHash: String,
         mail: { type: String, index: true },
         fn: { type: String, index: true }
     });
@@ -24,6 +31,7 @@ module Schemas {
         results: [{
             source: String,
             grade: Number,
+            runningTime: Number,
             max: Number
         }]
     });

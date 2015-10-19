@@ -1,0 +1,18 @@
+<div class="morph-button morph-button-overlay morph-button-fixed login-morphing-button">
+    <button type="button">Login</button>
+    <div class="morph-content always-disable-scrolling">
+        <div>
+            <div class="content-style-overlay content-style-form">
+                <i class="close-button fa fa-2x fa-close"></i>
+                <h2>Login</h2>
+                <form data-bind="submit: viewmodel.login.bind(viewmodel), with: viewmodel">
+                    <p><label>Email</label><input type="email" data-bind="value: email"/></p>
+                    <p><label>Password</label><input type="password" data-bind="value: password"/></p>
+                    <p><button type="submit">Login</button></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<span data-bind="template: { afterRender: viewmodel.postRender.bind(viewmodel) }"></span>

@@ -4,10 +4,24 @@ namespace PartialViewmodels {
     export class Link {
         public name: string;
         public link: string;
+        public icon: string;
 
-        constructor(name: string, link: string) {
+        constructor(name: string, link: string, icon?: string) {
             this.name = name;
             this.link = link;
+            this.icon = icon;
+        }
+    }
+
+    export class MenuItem extends Link {
+        public requiresLogin: boolean;
+
+        constructor(name: string,
+                    link: string,
+                    icon?: string,
+                    requiresLogin?: boolean) {
+            super(name, link, icon);
+            this.requiresLogin = requiresLogin;
         }
     }
 

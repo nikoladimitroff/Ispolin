@@ -41,6 +41,16 @@ export default class DataAccessLayer {
         }
     };
 
+    public saveAll<T>(data: mongoose.Document[]): Q.Promise<T[]> {
+        let promises: Q.Promise<T>[] = [];
+        for (let obj of data) {
+            let mongoPromise = this.promiseForMongo();
+            obj.save(mongoPromise.callback);
+            promises.push(mongoPromise.promise);
+        }
+        return Q.all(promises);
+    }
+
     public promiseForMongo(): IMongoPromise {
         let deferred = Q.defer<boolean>();
         return {
@@ -55,4 +65,5 @@ export default class DataAccessLayer {
             }
         };
     }
+
 }

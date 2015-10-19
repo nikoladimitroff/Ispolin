@@ -4,25 +4,39 @@
 /// <reference path="./config.ts" />
 
 
-type Link = PartialViewmodels.Link;
+type MenuItem = PartialViewmodels.MenuItem;
 
-class Viewmodel {
-    public courseName: KnockoutObservable<string>;
-    public mainMenu: KnockoutObservableArray<Link>;
+class ApplicationViewmodel {
+    public mainMenu: KnockoutObservableArray<MenuItem>;
     public activeView: KnockoutObservable<string>;
+    public isLoggedIn: KnockoutObservable<boolean>;
 
     constructor() {
-        this.courseName = ko.observable<string>();
-        this.mainMenu = ko.observableArray<Link>();
-        this.activeView = ko.observable("view!home");
+        this.mainMenu = ko.observableArray<MenuItem>();
+        this.activeView = ko.observable<string>();
+        this.isLoggedIn = ko.observable<boolean>(false);
     }
 
     public changeView(nextView: string): void {
+        let item = this.getMenuItem(nextView) || {} as MenuItem;
+        if (item.requiresLogin && !this.isLoggedIn()) {
+            alert("Seeing " + item.name + " requires you to be logged in!");
+            return;
+        }
         this.activeView("view!" + nextView);
+    }
+
+    private getMenuItem(itemName: string): MenuItem {
+        for (let item of this.mainMenu()) {
+            if (item.link === itemName) {
+                return item;
+            }
+        }
+        return null;
     }
 }
 
-let viewmodel = new Viewmodel();
+let appViewmodel = new ApplicationViewmodel();
 
 interface IClassMap {
     [name: string]: Function;
@@ -33,7 +47,17 @@ let getViewmodelForComponent = function (fullName: string): Function {
     let shortName = fullName.substr(fullName.indexOf("!") + 1);
     // Capitalize
     shortName = shortName[0].toUpperCase() + shortName.substr(1);
-    return (<IClassMap><any>PartialViewmodels)[shortName];
+    shortName = shortName.replace(/_[a-z]/g, (replacement) => {
+        return replacement[1].toUpperCase();
+    });
+    let partialViewmodel = (<IClassMap><any>PartialViewmodels)[shortName];
+    if (partialViewmodel) {
+        return partialViewmodel;
+    }
+    // If there's no partial viewmodel available, create a params proxy
+    return function (params: Object): Object {
+        return params;
+    };
 };
 
 let registerComponents = function (): void {
@@ -47,7 +71,13 @@ let registerComponents = function (): void {
     }
 };
 
-type TranslationSubmap = { [entry: string]: string };
+type TranslationSubmap = {
+    [entry: string]: {
+        text: string,
+        icon: string,
+        requiresLogin: boolean
+    }
+};
 interface ITranslationMap {
     mainMenu: TranslationSubmap;
 }
@@ -55,20 +85,24 @@ interface ITranslationMap {
 let initializeBindings = function (translation: ITranslationMap): void {
     let mainMenuItems = translation.mainMenu;
     for (let itemName in mainMenuItems) {
-        let item = new PartialViewmodels.Link(mainMenuItems[itemName],
-                                              itemName);
-        viewmodel.mainMenu.push(item);
+        let text = mainMenuItems[itemName].text;
+        let link = itemName;
+        let icon = mainMenuItems[itemName].icon;
+        let requiresLogin = mainMenuItems[itemName].requiresLogin;
+        let item = new PartialViewmodels.MenuItem(text, link,
+                                                  icon, requiresLogin);
+        appViewmodel.mainMenu.push(item);
     }
-    ko.applyBindings(viewmodel);
-};
-
-let setCourseName = function (): void {
-    viewmodel.courseName(Config.instance.courseInfo.name);
+    ko.applyBindings(appViewmodel);
 };
 
 let main = (): void => {
-    Config.initialize().done(setCourseName);
-    Utils.loadJSON("/resources/translation.json").done(initializeBindings);
+    let initializeConfig = Config.initialize();
+    Config.instance.onToggleLogged(appViewmodel.isLoggedIn);
+    let getTranslations = Utils.loadJSON("/resources/translation.json");
+
+    initializeConfig.then(() => appViewmodel.changeView("home"))
+                    .then(() => getTranslations).done(initializeBindings);
     registerComponents();
 };
 

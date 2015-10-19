@@ -1,1 +1,16 @@
-<h1>Home page</h1>
+<h1 data-bind="text: courseName"></h1>
+<div class="signing-section" data-bind="if: !appViewmodel.isLoggedIn()">
+    <login-form id="home-logging-form"
+        params="viewmodel: loginVM">
+    </login-form>
+    <p id="home-login-signup-divisor">
+    or
+    </p>
+    <signup-form id="home-signup-form"
+        params="viewmodel: signupVM">
+    </signup-form>
+</div>
+<!-- ko if: appViewmodel.isLoggedIn() -->
+<logout-button params="viewmodel: logoutVM"></logout-button>
+<!-- /ko -->
+<img id="home-welcome-image" data-bind="attr: { src: welcomeImage }"></img>

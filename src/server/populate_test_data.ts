@@ -9,6 +9,7 @@ import bunyan = require("bunyan");
 import mongoose = require("mongoose");
 import Q = require("q");
 
+import { Validator } from "./validator";
 import DataAccessLayer from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
@@ -26,16 +27,6 @@ function clear(): AnyPromise {
     return Q.all(promises);
 }
 
-function saveAll(data: mongoose.Document[]): AnyPromise {
-    let promises: AnyPromise[] = [];
-    for (let obj of data) {
-        let mongoPromise = DataAccessLayer.instance.promiseForMongo();
-        obj.save(mongoPromise.callback);
-        promises.push(mongoPromise.promise);
-    }
-    return Q.when(Q.all(promises));
-}
-
 function populateCourses(): AnyPromise {
     let courses: SchemaModels.ICourseInfo[] = [
         new SchemaModels.Course({
@@ -50,26 +41,38 @@ function populateCourses(): AnyPromise {
             name: "High Performance Computing",
             shortName: "HPC",
             link: "course_index.html",
-            description: "How to make your computer fly"
+            description: "How to make your computer fly",
+            availableHomeworks: [{
+                title: "Just spas",
+                description: "Just spas is a comic by Sten Damyanov",
+                programmingLanguage: "cpp"
+            }, {
+                title: "The golden apple",
+                description: "The golden apple is an upcoming animation series",
+                programmingLanguage: "cpp"
+            },
+            ]
         })
     ];
-    return saveAll(courses);
+    return DataAccessLayer.instance.saveAll(courses);
 }
 
 function populateUsers(): AnyPromise {
     let users: SchemaModels.IUser[] = [
         new SchemaModels.User({
             name: "Nikola Dimitroff",
+            passportHash: Validator.hashPassword("asd"),
             mail: "nikola@dimitroff.bg",
             fn: "12345"
         }),
         new SchemaModels.User({
             name: "Dimitar Trendafilov",
+            passportHash: Validator.hashPassword("asd"),
             mail: "dimitar@coherent-labs.com",
             fn: "54321"
         })
     ];
-    return saveAll(users);
+    return DataAccessLayer.instance.saveAll(users);
 }
 
 function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
@@ -80,21 +83,21 @@ function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
             course: courseInfo._id,
             user: users[0]._id,
             results: [
-                { source: "Test 1", grade: 0.1, max: 0.15 },
-                { source: "Homework 1", grade: 0.2, max: 0.2 }
+                { source: "Test 1", grade: 0.1, runningTime: 1, max: 0.15 },
+                { source: "Homework 1", grade: 0.2, runningTime: 1, max: 0.2 }
             ]
         }),
         new SchemaModels.CourseData({
             course: courseInfo._id,
             user: users[1]._id,
             results: [
-                { source: "Bonus 1", grade: 0.02, max: 0.02 },
-                { source: "Bonus 2", grade: 0.01, max: 0.02 },
-                { source: "Course project", grade: 0.28, max: 0.3 }
+                { source: "Bonus 1", grade: 0.02, runningTime: 1, max: 0.02 },
+                { source: "Bonus 2", grade: 0.01, runningTime: 1, max: 0.02 },
+                { source: "Project", grade: 0.28, runningTime: 1, max: 0.3 }
             ]
         })
     ];
-    return saveAll(courseData);
+    return DataAccessLayer.instance.saveAll(courseData);
 }
 
 function populateCourseData(): AnyPromise {

@@ -12,11 +12,11 @@ module.exports = function (grunt) {
                 atBegin: true
             },
             html: {
-                files: ["views/**/*.html", "index.html", "course_index.html"],
+                files: ["components/**/*.html", "index.html", "course_index.html"],
                 tasks: settings.htmlTasks,
             },
             css: {
-                files: "style/less/*.less",
+                files: "styles/**/*.less",
                 tasks: settings.cssTasks,
             },
             ts: {
@@ -34,11 +34,11 @@ module.exports = function (grunt) {
         },
         less: {
             options: {
-                paths: ["style/less/*.less"]
+                paths: ["styles/**/*.less"]
             },
             client: {
                 files: {
-                    "distr/client/main.css": "style/less/main.less"
+                    "distr/client/main.css": "styles/less/main.less"
                 }
             },
         },
@@ -85,11 +85,12 @@ module.exports = function (grunt) {
                 banner: grunt.file.read("course_index.html"),
                 process: function(src, filepath) {
                     var containerDir = path.basename(path.dirname(filepath));
-                    var prefix = "component!";
+                    var prefix = "";
                     if (containerDir === "views") {
                         prefix = "view!";
                     }
                     var name = path.basename(filepath, path.extname(filepath));
+                    name = name.replace("_", "-");
                     return EOL +
                            "<script id='" + prefix + name + "' " +
                            "type='text/html' class='component' >" +
@@ -112,12 +113,13 @@ module.exports = function (grunt) {
                     { expand: true, src: "3rdparty/**", dest: "distr/client/" },
                     // 3rdparty scripts installed via npm below
                     { expand: false, src: "node_modules/knockout/build/output/knockout-latest.js", dest: "distr/client/3rdparty/knockout-latest.js" },
-                    { expand: false, src: "node_modules/q/q.js", dest: "distr/client/3rdparty/q.js" },
+                    { expand: false, src: "node_modules/font-awesome/css/font-awesome.min.css", dest: "distr/client/3rdparty/font-awesome/css/font-awesome.min.css" },
+                    { expand: true, flatten: true, src: "node_modules/font-awesome/fonts/*", dest: "distr/client/3rdparty/font-awesome/fonts/"},
                 ]
             },
             resources: {
                 files: [
-                    { expand: true, flatten: true, src: "resources/*", dest: "distr/client/resources/" },
+                    { expand: true, src: "resources/**", dest: "distr/client/" },
                 ]
             },
             lectures: {
@@ -128,6 +130,11 @@ module.exports = function (grunt) {
             "system-index": {
                 files: [
                     { expand: false, src: "index.html", dest: "distr/client/index.html" },
+                ]
+            },
+            source: {
+                files: [
+                    { expand: true, src: "src/**", dest: "distr/client/" }
                 ]
             }
         },
@@ -194,7 +201,19 @@ module.exports = function (grunt) {
                         timeout: 1000
                     }
                 }
-            }
+            },
+            "dump-db": {
+                command: 'node distr/server/dump_db.js | bunyan',
+                options: {
+                    stdout: true,
+                    stderr: true,
+                    failOnError: true,
+                    execOptions: {
+                        cwd: '.',
+                        timeout: 1000
+                    }
+                }
+            },
         }
     });
 
@@ -204,6 +223,7 @@ module.exports = function (grunt) {
     grunt.registerTask("run", ["concurrent:run-server"]);
     grunt.registerTask("run-db", ["shell:mongodb"]);
     grunt.registerTask("repopulate", ["shell:repopulate-db"]);
+    grunt.registerTask("dump", ["shell:dump-db"]);
     grunt.registerTask("test", ["mochaTest"]);
     grunt.registerTask("lint", ["tslint"]);
 
