@@ -48,9 +48,9 @@ export class Users implements IRoute {
 
     private summarizeUsers(course: ICourseInfo): SummarizedGradesPromise {
         let queryGrades = SchemaModels.CourseData
-                                        .find({ course: course._id })
-                                        .populate("user")
-                                        .exec();
+                                      .find({ course: course._id })
+                                      .populate("user")
+                                      .exec();
         let promise = queryGrades.then(this.groupUserGrades.bind(this),
                                        DataAccessLayer.instance.onError);
         return promise as any as SummarizedGradesPromise;
