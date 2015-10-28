@@ -17,13 +17,11 @@ export class Homework implements IRoute {
     public handleRequest(req: restify.Request,
                          res: restify.Response,
                          next: restify.Next): void {
-        let courseName = req.params.course;
+        let courseId = req.params.courseId;
         let homeworkName = req.body.name;
         let homeworkSolution = req.body.solution;
-        console.log("about to save", courseName, homeworkName,
-                    homeworkSolution);
         let queryCourseId = Q(SchemaModels.Course
-                                          .findOne({shortName: courseName})
+                                          .findOne({_id: courseId})
                                           .exec());
         // For now always run the cpp file tester
         let result = testCppFile(homeworkName, homeworkSolution);
@@ -31,23 +29,21 @@ export class Homework implements IRoute {
         let sendResults = () => res.send(200);
         let sendError = () => res.send(500, "An unknown error ocurred");
         let user: IUser = (req as any).user;
-        queryCourseId.then(course => {
-            return this.addResult(user, course, result);
-        }).done(sendResults, sendError);
+        this.addResult(user, courseId, result).done(sendResults, sendError);
     }
 
-    private addResult(user: IUser, course: ICourseInfo, result: IGrade): any {
+    private addResult(user: IUser, courseId: string, result: IGrade): any {
         let query = {
-            course: course._id,
+            course: courseId,
             user: user._id
         };
-        let queryGrades = SchemaModels.CourseData
-                                      .findOne(query)
-                                      .exec();
+        let queryGrades = Q(SchemaModels.CourseData
+                                        .findOne(query)
+                                        .exec());
         return queryGrades.then(courseData => {
             if (!courseData) {
                 courseData = new SchemaModels.CourseData({
-                course: course._id,
+                course: courseId,
                 user: user._id,
                 results: []
                 });

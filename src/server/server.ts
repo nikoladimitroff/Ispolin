@@ -6,6 +6,7 @@
 import crypto = require("crypto");
 import fs = require("fs");
 
+import Q = require("q");
 import express = require("express");
 import restify = require("restify");
 import bunyan = require("bunyan");
@@ -104,13 +105,13 @@ export default class Server {
         let courseInfo: restify.RequestHandler = (req: restify.Request,
                                                   res: restify.Response,
                                                   next: restify.Next) => {
-            let queryCourse = SchemaModels.Course
-                                          .findOne({ shortName: FIXED_COURSE })
-                                          .exec();
+            let queryCourse = Q(SchemaModels.Course
+                                            .findOne({shortName: FIXED_COURSE})
+                                            .exec());
             let onSuccess = (result: ICourseInfo) => {
                 res.send(200, result);
             };
-            queryCourse.then(onSuccess, this.dal.onError);
+            queryCourse.done(onSuccess, this.dal.onError);
         };
         this.app.get("/api/course-info/", courseInfo);
 
@@ -137,15 +138,15 @@ export default class Server {
                      logout);
 
         let users = new UsersRoute();
-        this.app.get("/api/users/:course", users.handleRequest.bind(users));
+        this.app.get("/api/users/:courseId", users.handleRequest.bind(users));
 
         let results = new ResultsRoute();
-        this.app.post("/api/results/:course",
+        this.app.post("/api/results/:courseId",
                       passport.authenticate("session"),
                       results.handleRequest.bind(results));
 
         let homework = new HomeworkRoute();
-        this.app.post("/api/homework/:course",
+        this.app.post("/api/homework/:courseId",
                       passport.authenticate("session"),
                       homework.handleRequest.bind(homework));
 

@@ -19,16 +19,16 @@ type SummarizedGradesPromise = Q.Promise<ISummarizedGrades[]>;
 export class Users implements IRoute {
 
     public handleRequest(req: restify.Request,
-                            res: restify.Response,
-                            next: restify.Next): void {
-        let queryId = Q(SchemaModels.Course
-                                    .findOne({shortName: req.params.course})
-                                    .exec());
+                         res: restify.Response,
+                         next: restify.Next): void {
         let sendResults = (result: ISummarizedGrades[]): void => {
+            console.log("SUCCESS", arguments);
             res.send(200, result);
         };
-        queryId.then(this.summarizeUsers.bind(this))
-               .done(sendResults);
+        console.log(req.params.courseId);
+        this.summarizeUsers(req.params.courseId).done(sendResults, () => {
+            console.log("ERROR", arguments);
+        });
     }
 
     private sumResults(results: IGrade[]): number {
@@ -36,21 +36,24 @@ export class Users implements IRoute {
     }
 
     private groupUserGrades(data: ICourseData[]): ISummarizedGrades[] {
+        console.log("2", data);
         let groupedData = data.map((courseData) => {
             return {
                 name: courseData.user.name,
                 totalGrade: this.sumResults(courseData.results)
             };
         });
+        console.log("3", groupedData);
         groupedData.sort((x, y) => x.totalGrade - y.totalGrade);
         return groupedData;
     }
 
-    private summarizeUsers(course: ICourseInfo): SummarizedGradesPromise {
-        let queryGrades = SchemaModels.CourseData
-                                      .find({ course: course._id })
-                                      .populate("user")
-                                      .exec();
+    private summarizeUsers(courseId: string): SummarizedGradesPromise {
+        let queryGrades = Q(SchemaModels.CourseData
+                                        .find({ course: courseId })
+                                        .populate("user")
+                                        .exec());
+        console.log("1");
         let promise = queryGrades.then(this.groupUserGrades.bind(this),
                                        DataAccessLayer.instance.onError);
         return promise as any as SummarizedGradesPromise;

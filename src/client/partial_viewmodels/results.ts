@@ -21,8 +21,8 @@ namespace PartialViewmodels {
                     this.grades.push(grade);
                 }
             };
-            let courseShortName = Config.instance.courseInfo.shortName;
-            Utils.loadJSON(`/api/results/${courseShortName}`, "POST")
+            let courseId = Config.instance.courseInfo.getId();
+            Utils.loadJSON(`/api/results/${courseId}`, "POST")
                  .done(initializeBindings);
         }
     }

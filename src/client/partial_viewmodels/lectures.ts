@@ -2,6 +2,7 @@
 /// <reference path="../../../typings/reveal/reveal.d.ts" />
 /// <reference path="./common.ts" />
 /// <reference path="../utils.ts" />
+/// <reference path="../config.ts" />
 
 namespace PartialViewmodels {
     "use strict";

@@ -16,28 +16,19 @@ export class Results implements IRoute {
     public handleRequest(req: restify.Request,
                          res: restify.Response,
                          next: restify.Next): void {
-        console.log("here we are!");
-        let queryId = Q(SchemaModels.Course
-                                    .findOne({shortName: req.params.course})
-                                    .exec());
+        let courseId = req.params.courseId;
         let sendResults = (result: IGrade[]): void => {
-            console.log("rolling?");
             res.send(200, result);
         };
         let user: IUser = (req as any).user;
-        console.log("Queryy?", req.params.course);
-        queryId.then(this.getResults.bind(this, user))
-               .done(sendResults);
+        this.getResults(user, courseId).done(sendResults);
     }
 
-    private getResults(user: IUser, course: ICourseInfo): any {
-
-        console.log("Querying stuff", user, course);
+    private getResults(user: IUser, courseId: string): any {
         let query = {
-            course: course._id,
+            course: courseId,
             user: user._id
         };
-        console.log("_qry", query);
         let queryGrades = Q(SchemaModels.CourseData
                                         .findOne(query)
                                         .select("results")

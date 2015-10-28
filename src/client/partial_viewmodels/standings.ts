@@ -1,6 +1,7 @@
 /// <reference path="../../../typings/knockout/knockout.d.ts" />
 /// <reference path="../../common/models.ts" />
 /// <reference path="../utils.ts" />
+/// <reference path="../config.ts" />
 
 type IUser = Models.IUser;
 namespace PartialViewmodels {
@@ -28,8 +29,8 @@ namespace PartialViewmodels {
                     });
                 }
             };
-            let courseShortName = Config.instance.courseInfo.shortName;
-            Utils.loadJSON(`/api/users/${courseShortName}`, "GET")
+            let courseId = Config.instance.courseInfo.getId();
+            Utils.loadJSON(`/api/users/${courseId}`, "GET")
                  .done(initializeBindings);
         }
     }

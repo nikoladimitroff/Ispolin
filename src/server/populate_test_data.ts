@@ -125,7 +125,7 @@ function populateData(): AnyPromise {
 }
 
 function main(): any {
-    let logger = bunyan.createLogger({ name: "Unnamed" });
+    let logger = bunyan.createLogger({ name: "Ispolin" });
     let dal = new DataAccessLayer("mongodb://localhost/system-data", logger);
 
     let postClean = () => {
