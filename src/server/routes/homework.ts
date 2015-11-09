@@ -6,10 +6,9 @@ import Q = require("q");
 import { IRoute } from "./route";
 import DataAccessLayer from "../data_access_layer";
 import { SchemaModels } from "../schemas";
-import { testCppFile } from "../homework_testers/cpp";
+import { CourseParser } from "./course_parser";
 
 type IUser = SchemaModels.IUser;
-type ICourseInfo = SchemaModels.ICourseInfo;
 type IGrade = Models.IGrade;
 
 export class Homework implements IRoute {
@@ -17,24 +16,33 @@ export class Homework implements IRoute {
     public handleRequest(req: restify.Request,
                          res: restify.Response,
                          next: restify.Next): void {
-        let courseId = req.params.courseId;
+        let courseName = req.params.shortCourseName;
         let homeworkName = req.body.name;
         let homeworkSolution = req.body.solution;
-        let queryCourseId = Q(SchemaModels.Course
-                                          .findOne({_id: courseId})
-                                          .exec());
-        // For now always run the cpp file tester
-        let result = testCppFile(homeworkName, homeworkSolution);
+        // Find the checker for this homework
+        let course = CourseParser.instance.getDetailedInfo(courseName);
+        let homework = null;
+        for (let availableHomework of course.availableHomeworks) {
+            if (availableHomework.title === homeworkName) {
+                homework = availableHomework;
+            }
+        }
+        if (!homework) {
+            res.send(400, "No such homework is currently available.");
+            return;
+        }
+        let checker = CourseParser.instance.findChecker(homework.checker);
+        let result = checker(homeworkName, homeworkSolution);
 
         let sendResults = () => res.send(200);
         let sendError = () => res.send(500, "An unknown error ocurred");
         let user: IUser = (req as any).user;
-        this.addResult(user, courseId, result).done(sendResults, sendError);
+        this.addResult(user, courseName, result).done(sendResults, sendError);
     }
 
-    private addResult(user: IUser, courseId: string, result: IGrade): any {
+    private addResult(user: IUser, courseName: string, result: IGrade): any {
         let query = {
-            course: courseId,
+            course: courseName,
             user: user._id
         };
         let queryGrades = Q(SchemaModels.CourseData
@@ -43,7 +51,7 @@ export class Homework implements IRoute {
         return queryGrades.then(courseData => {
             if (!courseData) {
                 courseData = new SchemaModels.CourseData({
-                course: courseId,
+                course: courseName,
                 user: user._id,
                 results: []
                 });

@@ -71,19 +71,9 @@ let registerComponents = function (): void {
     }
 };
 
-type TranslationSubmap = {
-    [entry: string]: {
-        text: string,
-        icon: string,
-        requiresLogin: boolean
-    }
-};
-interface ITranslationMap {
-    mainMenu: TranslationSubmap;
-}
 
-let initializeBindings = function (translation: ITranslationMap): void {
-    let mainMenuItems = translation.mainMenu;
+let initializeBindings = function (): void {
+    let mainMenuItems = Config.instance.courseInfo.translations.mainMenu;
     for (let itemName in mainMenuItems) {
         let text = mainMenuItems[itemName].text;
         let link = itemName;
@@ -99,10 +89,9 @@ let initializeBindings = function (translation: ITranslationMap): void {
 let main = (): void => {
     let initializeConfig = Config.initialize();
     Config.instance.onToggleLogged(appViewmodel.isLoggedIn);
-    let getTranslations = Utils.loadJSON("/resources/translation.json");
 
     initializeConfig.then(() => appViewmodel.changeView("home"))
-                    .then(() => getTranslations).done(initializeBindings);
+                    .done(initializeBindings);
     registerComponents();
 };
 

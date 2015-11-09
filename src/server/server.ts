@@ -5,6 +5,7 @@
 "use strict";
 import crypto = require("crypto");
 import fs = require("fs");
+import path = require("path");
 
 import Q = require("q");
 import express = require("express");
@@ -20,12 +21,14 @@ import { Validator } from "./validator";
 import DataAccessLayer from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
+import { CourseParser } from "./routes/course_parser";
+import { AllCourses as AllCoursesRoute } from "./routes/allcourses";
+import { CourseInfo as CourseInfoRoute } from "./routes/course_info";
 import { Users as UsersRoute } from "./routes/users";
 import { Results as ResultsRoute } from "./routes/results";
 import { Signup as SignupRoute } from "./routes/signup";
 import { Homework as HomeworkRoute } from "./routes/homework";
 
-type ICourseInfo = SchemaModels.ICourseInfo;
 type IUser = SchemaModels.IUser;
 
 export default class Server {
@@ -35,6 +38,7 @@ export default class Server {
     private app: restify.Server;
 
     constructor() {
+        Q.longStackSupport = true;
         this.app = restify.createServer({ name: "Ispolin" });
         this.logger = bunyan.createLogger({ name: "Ispolin" });
         this.dal = new DataAccessLayer("mongodb://localhost/system-data",
@@ -55,7 +59,8 @@ export default class Server {
                 if (err) { return done(err, false); }
                 if (!user) { return done(null, false); }
                 let isCorrect = Validator.checkPassword(password,
-                                                        user.passportHash);
+                                                        user.passportHash,
+                                                        user.salt);
                 if (!isCorrect) { return done(null, false); }
                 return done(null, user);
             });
@@ -91,29 +96,14 @@ export default class Server {
     }
 
     private setupRouting(): void {
-        let courses: restify.RequestHandler = (req: restify.Request,
-                                               res: restify.Response,
-                                               next: restify.Next) => {
-            let availableCourses = SchemaModels.Course.find({}).exec();
-            let onSuccess = (result: ICourseInfo[]) => res.send(200, result);
-            availableCourses.then(onSuccess, this.dal.onError);
-        };
-        this.app.get("/api/courses/", courses);
+        CourseParser.init();
+        let allCourses = new AllCoursesRoute();
+        this.app.get("/api/courses/",
+                     allCourses.handleRequest.bind(allCourses));
 
-        // When testing, alternate the below string to GEA or HPC
-        const FIXED_COURSE = "HPC";
-        let courseInfo: restify.RequestHandler = (req: restify.Request,
-                                                  res: restify.Response,
-                                                  next: restify.Next) => {
-            let queryCourse = Q(SchemaModels.Course
-                                            .findOne({shortName: FIXED_COURSE})
-                                            .exec());
-            let onSuccess = (result: ICourseInfo) => {
-                res.send(200, result);
-            };
-            queryCourse.done(onSuccess, this.dal.onError);
-        };
-        this.app.get("/api/course-info/", courseInfo);
+        let courseInfo = new CourseInfoRoute();
+        this.app.get("/api/course-info/:shortCourseName",
+                     courseInfo.handleRequest.bind(courseInfo));
 
         let checkLogin = (req: restify.Request,
                           res: restify.Response,
@@ -138,15 +128,16 @@ export default class Server {
                      logout);
 
         let users = new UsersRoute();
-        this.app.get("/api/users/:courseId", users.handleRequest.bind(users));
+        this.app.get("/api/users/:shortCourseName",
+                     users.handleRequest.bind(users));
 
         let results = new ResultsRoute();
-        this.app.post("/api/results/:courseId",
+        this.app.post("/api/results/:shortCourseName",
                       passport.authenticate("session"),
                       results.handleRequest.bind(results));
 
         let homework = new HomeworkRoute();
-        this.app.post("/api/homework/:courseId",
+        this.app.post("/api/homework/:shortCourseName",
                       passport.authenticate("session"),
                       homework.handleRequest.bind(homework));
 
@@ -157,14 +148,6 @@ export default class Server {
         this.app.post("/api/login/:_",
                       passport.authenticate("local"),
                       this.handleLogin);
-
-        let lectures: restify.RequestHandler = (req: restify.Request,
-                                                res: restify.Response,
-                                                next: restify.Next) => {
-            const dirPath = `distr/client/lectures/${FIXED_COURSE}/`;
-            res.send(200, fs.readdirSync(dirPath));
-        };
-        this.app.get("/api/lectures/", lectures);
 
         // Static files are added last as they match every request
         this.app.get(".*", restify.serveStatic({

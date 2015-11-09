@@ -20,20 +20,45 @@ module Models {
         title: string;
         description: string;
         programmingLanguage: ProgrammingLanguage;
+        checker: string;
+    }
+
+    export interface ICheckerDescription {
+        name: string;
+        path: string;
     }
 
     export interface ICourseInfo extends IResource {
         shortName: string;
-        lecturesDir: string;
+        customcheckers?: ICheckerDescription[];
+    }
+
+    type TranslationSubmap = {
+        [entry: string]: {
+            text: string,
+            icon: string,
+            requiresLogin: boolean
+        }
+    };
+    export interface ITranslationMap {
+        mainMenu: TranslationSubmap;
+    }
+
+    // Used to give extra details about each course
+    export interface IDetailedCourseInfo extends ICourseInfo {
+        translations: ITranslationMap;
+        resources: IResource[];
+        news: string[];
+        lectures: string[];
         availableHomeworks: IHomework[];
     }
 
     export interface IUser {
         name: string;
         passportHash: string;
+        salt: string;
         mail: string;
         fn: string;
-        totalGrade: number;
     }
 
     export interface IGrade {
@@ -44,7 +69,7 @@ module Models {
     }
 
     export interface ICourseData {
-        course: any;
+        course: String;
         user: any;
         results: IGrade[];
     }

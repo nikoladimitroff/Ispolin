@@ -16,9 +16,32 @@ export class Signup implements IRoute {
                          res: restify.Response,
                          next: restify.Next): void {
 
-        // Check for duplicates
+        let name = req.body.name;
+        let password = req.body.password;
         let fn = req.body.fn;
         let mail = req.body.email;
+
+        if (!name || name.length === 0) {
+            res.send(400, "It is required to enter your name");
+            return;
+        }
+        if (!Validator.validateFacultyNumber(fn)) {
+            res.send(400, "Please enter a valid faculty number");
+            return;
+        }
+        if (!Validator.validateEmail(mail)) {
+            res.send(400, "Please enter a valid email address");
+            return;
+        }
+        if (!Validator.validatePasswordStrength(password)) {
+            res.send(400, Validator.weakPasswordMessage);
+            return;
+        }
+        if (password !== req.body.confirmPassword) {
+            res.send(400, "Passwords don't match");
+            return;
+        }
+        // Check for duplicates
 
         let queryFn = Q(SchemaModels.User
                                     .findOne({fn: fn})
@@ -29,7 +52,6 @@ export class Signup implements IRoute {
         let testDuplicates = (duplicates: IUser[]) => {
             let fnDuplicate: IUser = duplicates[0];
             let mailDuplicate: IUser = duplicates[1];
-            console.log(duplicates);
             if (fnDuplicate !== null) {
                 let message = "A student has already been registered " +
                               "with this faculty number";
@@ -50,17 +72,18 @@ export class Signup implements IRoute {
 
     private saveUser(req: restify.Request,
                      res: restify.Response): void {
-        let users: SchemaModels.IUser[] = [
-            new SchemaModels.User({
-                name: req.body.name,
-                passportHash: Validator.hashPassword(req.body.password),
-                mail: req.body.email,
-                fn: req.body.fn
-            })
-        ];
+        let password = req.body.password;
+        let salt = Validator.newSalt();
+        let user = new SchemaModels.User({
+            name: req.body.name,
+            passportHash: Validator.hashPassword(password, salt),
+            salt: salt,
+            mail: req.body.email,
+            fn: req.body.fn
+        });
         let onsuccess = () => res.send(200, "");
         let onerror = (error: Error) => res.send(500, JSON.stringify(error));
-        DataAccessLayer.instance.saveAll(users)
+        DataAccessLayer.instance.saveAll([user])
                                 .done(onsuccess, onerror);
     }
 }

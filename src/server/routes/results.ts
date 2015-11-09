@@ -8,7 +8,6 @@ import DataAccessLayer from "../data_access_layer";
 import { SchemaModels } from "../schemas";
 
 type IUser = SchemaModels.IUser;
-type ICourseInfo = SchemaModels.ICourseInfo;
 type IGrade = Models.IGrade;
 
 export class Results implements IRoute {
@@ -17,16 +16,20 @@ export class Results implements IRoute {
                          res: restify.Response,
                          next: restify.Next): void {
         let sendResults = (queryData: Models.ICourseData): void => {
-            res.send(200, queryData.results);
+            if (!queryData) {
+                res.send(200, []);
+            } else {
+                res.send(200, queryData.results);
+            }
         };
         let user: IUser = (req as any).user;
-        console.log("Standings: ", req.params.courseId);
-        this.getResults(user, req.params.courseId).done(sendResults);
+        console.log("Standings: ", req.params.shortCourseName);
+        this.getResults(user, req.params.shortCourseName).done(sendResults);
     }
 
-    private getResults(user: IUser, courseId: string): any {
+    private getResults(user: IUser, courseName: string): any {
         let query = {
-            course: courseId,
+            course: courseName,
             user: user._id
         };
         let queryGrades = Q(SchemaModels.CourseData

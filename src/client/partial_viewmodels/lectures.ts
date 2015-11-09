@@ -26,8 +26,9 @@ namespace PartialViewmodels {
                 if (!this.activePresentation()) {
                     return null;
                 }
-                return Config.instance.courseInfo.lecturesDir +
-                       this.activePresentation();
+                let course = Config.instance.courseInfo.shortName;
+                let currentLecture = this.activePresentation();
+                return `/courses/${course}/lectures/${currentLecture}`;
             });
             this.init();
         }
@@ -52,26 +53,25 @@ namespace PartialViewmodels {
             return (_: any, eventArgs: MouseEvent): void => {
                 eventArgs.preventDefault();
                 eventArgs.stopPropagation();
+                console.log(lecture);
                 this.activePresentation(lecture);
             };
         }
 
         private changePresentation(newPresentation: string): void {
+            console.log(newPresentation);
             localStorage.setItem("activePresentation", newPresentation);
             this.presentationFrame.contentWindow.location.reload();
         }
 
         private init(): void {
-            let initializeBindings = (lectures: string[]) => {
-                for (let lecture of lectures) {
-                    this.lectures.push({
-                        name: this.makeReadable(lecture),
-                        onclick: this.getClickHandler(lecture)
-                    });
-                }
-            };
-            Utils.loadJSON("/api/lectures", "GET")
-                 .done(initializeBindings);
+            let lectures = Config.instance.courseInfo.lectures;
+            for (let lecture of lectures) {
+                this.lectures.push({
+                    name: this.makeReadable(lecture),
+                    onclick: this.getClickHandler(lecture)
+                });
+            }
             this.activePresentationSourceFile
                 .subscribe(this.changePresentation.bind(this));
         }

@@ -39,16 +39,19 @@ content {
 table {
     border-collapse: collapse;
     font-size: 1.1em;
+    margin: 0 auto;
+    min-width: 60%;
 }
 
 th {
-    font-size: 1.1em;
+    font-size: 1.3em;
 }
 
 td, th {
     text-align: left;
     padding-left: 1em;
     max-width: 20em;
+    font-size: 1.15em;
 }
 
 td.number,
@@ -96,4 +99,10 @@ button[type=submit] {
     height: unset;
     line-height: initial;
     line-height: unset;
+}
+
+
+.disabled {
+    color: @text-disabled-color;
+    cursor: not-allowed !important;
 }

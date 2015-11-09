@@ -16,7 +16,7 @@ import { SchemaModels } from "./schemas";
 type MongooseModel = mongoose.Model<any>;
 type AnyPromise = Q.Promise<any>;
 function clear(): AnyPromise {
-    let databases = ["Course", "User", "CourseData"];
+    let databases = ["User", "CourseData"];
     let promises: AnyPromise[] = [];
     for (let i = 0; i < databases.length; i++) {
         let mongoPromise = DataAccessLayer.instance.promiseForMongo();
@@ -27,47 +27,21 @@ function clear(): AnyPromise {
     return Q.all(promises);
 }
 
-function populateCourses(): AnyPromise {
-    let courses: SchemaModels.ICourseInfo[] = [
-        new SchemaModels.Course({
-            name: "Game Engine Architecture",
-            shortName: "GEA",
-            lecturesDir: "/lectures/GEA/",
-            link: "course_index.html",
-            description: "An gentle introduction to the topic of " +
-                         "architecturing game engines."
-        }),
-        new SchemaModels.Course({
-            name: "High Performance Computing",
-            shortName: "HPC",
-            link: "course_index.html",
-            description: "How to make your computer fly",
-            availableHomeworks: [{
-                title: "Just spas",
-                description: "Just spas is a comic by Sten Damyanov",
-                programmingLanguage: "cpp"
-            }, {
-                title: "The golden apple",
-                description: "The golden apple is an upcoming animation series",
-                programmingLanguage: "cpp"
-            },
-            ]
-        })
-    ];
-    return DataAccessLayer.instance.saveAll(courses);
-}
-
 function populateUsers(): AnyPromise {
+    let salt1 = Validator.newSalt();
+    let salt2 = Validator.newSalt();
     let users: SchemaModels.IUser[] = [
         new SchemaModels.User({
             name: "Nikola Dimitroff",
-            passportHash: Validator.hashPassword("asd"),
+            passportHash: Validator.hashPassword("asd", salt1),
+            salt: salt1,
             mail: "nikola@dimitroff.bg",
             fn: "12345"
         }),
         new SchemaModels.User({
             name: "Dimitar Trendafilov",
-            passportHash: Validator.hashPassword("asd"),
+            passportHash: Validator.hashPassword("asd", salt2),
+            salt: salt2,
             mail: "dimitar@coherent-labs.com",
             fn: "54321"
         })
@@ -75,12 +49,12 @@ function populateUsers(): AnyPromise {
     return DataAccessLayer.instance.saveAll(users);
 }
 
-function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
+function fillInCourseData(courseName: string,
                           users: SchemaModels.IUser[]): AnyPromise {
-    console.log("Filling inside", courseInfo, users);
+    console.log("Filling inside", courseName, users);
     let courseData: SchemaModels.ICourseData[] = [
         new SchemaModels.CourseData({
-            course: courseInfo._id,
+            course: courseName,
             user: users[0]._id,
             results: [
                 { source: "Test 1", grade: 0.1, runningTime: 1, max: 0.15 },
@@ -88,7 +62,7 @@ function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
             ]
         }),
         new SchemaModels.CourseData({
-            course: courseInfo._id,
+            course: courseName,
             user: users[1]._id,
             results: [
                 { source: "Bonus 1", grade: 0.02, runningTime: 1, max: 0.02 },
@@ -102,26 +76,20 @@ function fillInCourseData(courseInfo: SchemaModels.ICourseInfo,
 
 function populateCourseData(): AnyPromise {
     let userPromise = SchemaModels.User.find({}).exec();
-    let coursePromise = SchemaModels.Course.find({}).exec();
-    let fillAllData = (users: SchemaModels.IUser[],
-                       courses: SchemaModels.ICourseInfo[]): AnyPromise => {
+    let fillAllData = (users: SchemaModels.IUser[]): AnyPromise => {
+        let courses = ["hpc", "gea"];
         let promises: AnyPromise[] = [];
         for (let courseInfo of courses) {
             promises.push(fillInCourseData(courseInfo, users));
         }
         return Q.all(promises);
     };
-    // Q.d.ts does not allow for spreading promises of different types
-    // We must cast the arguments to any
-    return Q.spread([userPromise, coursePromise],
-                    fillAllData as (x: any, y: any) => AnyPromise);
+    return userPromise.then(fillAllData) as any as AnyPromise;
 }
 
 function populateData(): AnyPromise {
-    return Q.all([
-            populateCourses(),
-            populateUsers()
-        ]).then(() => populateCourseData());
+    return populateUsers()
+           .then(() => populateCourseData());
 }
 
 function main(): any {

@@ -3,18 +3,74 @@
 #home-login-signup-divisor {
     text-align: center;
     color: @fancy-color-2;
-    margin: auto 25px;
+    margin: 25px 25px;
 }
 
+// Equal to the size of the morphing buttons
+@left-section-sizing: 300px;
 .signing-section {
-    text-align: center;
-}
-
-login-form, signup-form, #home-login-signup-divisor {
-    display: inline-block;
+    width: @left-section-sizing;
+    .morph-button.morph-button-overlay {
+        margin: 0;
+    }
 }
 
 #home-welcome-image {
     display: block;
     margin-top: 5%;
+    width: @left-section-sizing;
+}
+
+#home-news {
+    width: 60%;
+    height: 75%;
+    margin: 0 auto;
+    border: 10px double @fancy-color-2;
+    position: absolute;
+    left: 60%;
+    transform: translateX(-50%);
+    padding: 2em;
+
+    div {
+        height: 95%;
+        display: none;
+    }
+    .active-news {
+        display: block;
+        overflow: auto;
+    }
+}
+
+@media all and (max-width: 1280px) {
+    #home-news {
+        left: @left-section-sizing * 1.15;
+        transform: none;
+    }
+}
+
+#news-navigation ul {
+    position: relative;
+    display: flex;
+    margin: 1.5em auto;
+    padding: 0;
+    max-width: 100%;
+    list-style: none;
+    flex-flow: row wrap;
+    justify-content: center;
+
+    li {
+        position: relative;
+        display: block;
+        margin: 0;
+        text-align: center;
+        flex: 1;
+    }
+
+    .navigation-button {
+        cursor: pointer;
+        transition: color 0.2s linear;
+        &:not(.disabled):hover {
+            color: @fancy-color-2;
+        }
+    }
 }

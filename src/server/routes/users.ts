@@ -22,11 +22,11 @@ export class Users implements IRoute {
                          res: restify.Response,
                          next: restify.Next): void {
         let sendResults = (result: ISummarizedGrades[]): void => {
-            console.log("SUCCESS", arguments);
             res.send(200, result);
         };
-        console.log(req.params.courseId);
-        this.summarizeUsers(req.params.courseId).done(sendResults, () => {
+        let courseName = req.params.shortCourseName;
+        console.log(courseName);
+        this.summarizeUsers(courseName).done(sendResults, () => {
             console.log("ERROR", arguments);
         });
     }
@@ -36,24 +36,21 @@ export class Users implements IRoute {
     }
 
     private groupUserGrades(data: ICourseData[]): ISummarizedGrades[] {
-        console.log("2", data);
         let groupedData = data.map((courseData) => {
             return {
                 name: courseData.user.name,
                 totalGrade: this.sumResults(courseData.results)
             };
         });
-        console.log("3", groupedData);
         groupedData.sort((x, y) => x.totalGrade - y.totalGrade);
         return groupedData;
     }
 
-    private summarizeUsers(courseId: string): SummarizedGradesPromise {
+    private summarizeUsers(courseName: string): SummarizedGradesPromise {
         let queryGrades = Q(SchemaModels.CourseData
-                                        .find({ course: courseId })
+                                        .find({ course: courseName })
                                         .populate("user")
                                         .exec());
-        console.log("1");
         let promise = queryGrades.then(this.groupUserGrades.bind(this),
                                        DataAccessLayer.instance.onError);
         return promise as any as SummarizedGradesPromise;

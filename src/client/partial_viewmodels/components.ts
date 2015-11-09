@@ -72,10 +72,11 @@ namespace PartialViewmodels {
         }
         public signup(): void {
             let signupRequest = Utils.sendData("/api/signup/", "POST", {
-                username: this.name(),
+                name: this.name(),
                 email: this.email(),
                 fn: this.fn(),
-                password: this.password()
+                password: this.password(),
+                confirmPassword: this.confirmPassword()
             });
             let successOptions = {
                     message: "Signup successful!",

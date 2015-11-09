@@ -37,8 +37,8 @@ namespace PartialViewmodels {
         }
 
         public submit(homeworkName: string): void {
-            let courseId = Config.instance.courseInfo.getId();
-            let url = `/api/homework/${courseId}`;
+            let courseShortName = Config.instance.courseInfo.shortName;
+            let url = `/api/homework/${courseShortName}`;
             let request = Utils.sendData(url, "POST", {
                 name: homeworkName,
                 solution: this.homeworkContents()

@@ -40,7 +40,7 @@ function main(): any {
 
     let dbToPrint: string[] = [];
     if (process.argv.length === 2) {
-        dbToPrint = ["user", "course", "coursedata"];
+        dbToPrint = ["user", "coursedata"];
     } else {
         // The first 2 args are node.js and the executing script, ignore them
         dbToPrint = process.argv.filter((_, i) => i >= 2)

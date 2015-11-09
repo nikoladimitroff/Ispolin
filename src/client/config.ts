@@ -4,18 +4,10 @@
 
 "use strict";
 
-
-
-// Helper interface for the frontend. Can't be used on the server.
-// If mongo sees the _id property, it won't autogenerate one.
-interface IClientCourseInfo extends Models.ICourseInfo {
-    getId(): string;
-}
-
 class Config {
     public static instance: Config;
 
-    public courseInfo: IClientCourseInfo;
+    public courseInfo: Models.IDetailedCourseInfo;
     public isLoggedIn: boolean;
     private loggedStateListeners: ((isLogged: boolean) => void)[];
 
@@ -55,14 +47,12 @@ class Config {
     }
 
     private loadData(): Q.Promise<any> {
-        let course = Utils.loadJSON<Models.ICourseInfo>("/api/course-info");
-        course.then((data: Models.ICourseInfo) => {
-            let clientCourseInfo = data as any as IClientCourseInfo;
-            clientCourseInfo.getId = function (): string {
-                return this._id;
-            };
+        const FIXED_COURSE = "gea";
+        let requestUrl = `/api/course-info/${FIXED_COURSE}`;
+        let course = Utils.loadJSON<Models.IDetailedCourseInfo>(requestUrl);
+        course.then((data: Models.IDetailedCourseInfo) => {
             console.log("Course Info", data);
-            this.courseInfo = clientCourseInfo;
+            this.courseInfo = data;
         });
         let loginPromise = this.checkLoginStatus();
 
