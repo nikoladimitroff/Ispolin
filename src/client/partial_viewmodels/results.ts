@@ -41,5 +41,16 @@ namespace PartialViewmodels {
             Utils.loadJSON(`/api/results/${courseShortName}`, "POST")
                  .done(initializeBindings);
         }
+
+        private translateStatus(homeworkStatus: Models.HomeworkStatus): string {
+            const status = Models.HomeworkStatus;
+            switch (homeworkStatus) {
+                case status.NotCompiling: return "Does not compile";
+                case status.Crashing: return "Crashes or throws";
+                case status.WrongResult: return "Wrong output";
+                case status.Working: return "Works";
+                default: return "-";
+            }
+        }
     }
 }

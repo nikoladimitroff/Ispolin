@@ -2,7 +2,7 @@
 /// <reference path="../../typings/bunyan/bunyan.d.ts" />
 /// <reference path="../../typings/mongoose/mongoose.d.ts" />
 
-/// <reference path="../common/definitions.ts" />
+/// <reference path="../common/models.ts" />
 
 "use strict";
 import bunyan = require("bunyan");
@@ -56,19 +56,27 @@ function fillInCourseData(courseName: string,
         new SchemaModels.CourseData({
             course: courseName,
             user: users[0]._id,
-            results: [
-                { source: "Test 1", grade: 0.1, runningTime: 1, max: 0.15 },
-                { source: "Homework 1", grade: 0.2, runningTime: 1, max: 0.2 }
-            ]
+            results: [{
+                source: "Test 1", grade: 0.1, runningTime: 1, max: 0.15,
+                status: SchemaModels.HomeworkStatus.NotCompiling
+            }, {
+                source: "Homework 1", grade: 0.2, runningTime: 1, max: 0.2,
+                status: SchemaModels.HomeworkStatus.Working
+            }]
         }),
         new SchemaModels.CourseData({
             course: courseName,
             user: users[1]._id,
-            results: [
-                { source: "Bonus 1", grade: 0.02, runningTime: 1, max: 0.02 },
-                { source: "Bonus 2", grade: 0.01, runningTime: 1, max: 0.02 },
-                { source: "Project", grade: 0.28, runningTime: 1, max: 0.3 }
-            ]
+            results: [{
+                source: "Bonus 1", grade: 0.02, runningTime: 1, max: 0.02,
+                status: SchemaModels.HomeworkStatus.Working
+            }, {
+                source: "Bonus 2", grade: 0.01, runningTime: 1, max: 0.02,
+                status: SchemaModels.HomeworkStatus.Working
+            }, {
+                source: "Project", grade: 0.28, runningTime: 1, max: 0.3,
+                status: SchemaModels.HomeworkStatus.Working
+            }]
         })
     ];
     return DataAccessLayer.instance.saveAll(courseData);

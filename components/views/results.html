@@ -3,6 +3,7 @@
     <thead>
         <tr>
             <th>Task</th>
+            <th>Status</th>
             <th class="number">Grade</th>
             <th class="number">Max</ht>
             <th class="number">Percentage</th>
@@ -11,6 +12,7 @@
     <tbody id="results-grid" data-bind="foreach: grades">
         <tr>
             <td data-bind="text: source"></dr>
+            <td data-bind="text: $component.translateStatus(status)"></td>
             <td data-bind="text: grade.toFixed(2)" class="number"></td>
             <td data-bind="text: max.toFixed(2)" class="number"></td>
             <td data-bind="text: (grade / max * 100).toFixed(2) + '%'" class="number"></td>

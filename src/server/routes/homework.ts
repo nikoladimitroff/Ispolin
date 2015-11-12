@@ -63,6 +63,7 @@ export class Homework implements IRoute {
                     courseData.results[i].grade = result.grade;
                     courseData.results[i].runningTime = result.runningTime;
                     courseData.results[i].max = result.max;
+                    courseData.results[i].status = result.status;
                     alreadyDoneHomework = true;
                     break;
                 }

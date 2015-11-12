@@ -20,7 +20,8 @@ module Schemas {
             source: String,
             grade: Number,
             runningTime: Number,
-            max: Number
+            max: Number,
+            status: Number /* That's actually the HomeworkStatus enum */
         }]
     });
 }
@@ -39,5 +40,12 @@ export module SchemaModels {
     export var User = mongoose.model<IUser>("User", Schemas.user);
     export var CourseData = mongoose.model<ICourseData>("CourseData",
                                                         Schemas.courseData);
+    // This copies Models.HomeworkStatus, because we can't export it from models
+    export enum HomeworkStatus {
+        NotCompiling,
+        Crashing,
+        WrongResult,
+        Working
+    }
     /* tslint:enable:variable-name */
 }

@@ -15,7 +15,6 @@ module Models {
         private value: string;
         constructor(value: string) { this.value = value; }
     }
-
     export interface IHomework {
         title: string;
         description: string;
@@ -63,11 +62,19 @@ module Models {
         fn: string;
     }
 
+    export enum HomeworkStatus {
+        NotCompiling,
+        Crashing,
+        WrongResult,
+        Working
+    }
+
     export interface IGrade {
         source: string;
         grade: number;
         runningTime: number;
         max: number;
+        status: HomeworkStatus;
     }
 
     export interface ICourseData {
