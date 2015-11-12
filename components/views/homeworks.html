@@ -7,20 +7,34 @@
         <label class="language-label">
             Language: <span data-bind="text: programmingLanguage"></span>
         </label>
-        <p data-bind="text: description"></p>
+        <label class="end-date-label">
+            Due: <span data-bind="text: endDate.toLocaleString()"></span>
+        </label>
+        <p data-bind="html: description" class="homework-summary"></p>
         <div class="morph-button morph-button-overlay morph-button-fixed">
-            <button type="button">Complete</button>
+            <!-- Disable the button if the homework is overdue -->
+            <button type="button"
+                    data-bind="css: { disabled: isOverdue },
+                               text:  isOverdue() ? 'Overdue' : 'Complete'">
+            </button>
             <div class="morph-content">
                 <div>
                     <div class="content-style-overlay content-style-form">
                         <i class="close-button fa fa-2x fa-close"></i>
                         <h2 data-bind="text: title"></h2>
-                        <p data-bind="text: description"></p>
+                        <p data-bind="html: description"></p>
+                        <!-- ko if: isOverdue -->
+                        <h2 class="submit-not-allowed-message">
+                            You can't submit this homework, it's overdue!
+                        </h2>
+                        <!-- /ko -->
+                        <!-- ko ifnot: isOverdue -->
                         <form data-bind="submit: $parent.submit.bind($parent, title)">
                             <label>Write your code here</label>
                             <textarea data-bind="textInput: $parent.homeworkContents"></textarea>
                             <p><button type="submit">Submit</button></p>
                         </form>
+                        <!-- /ko -->
                     </div>
                 </div>
             </div>

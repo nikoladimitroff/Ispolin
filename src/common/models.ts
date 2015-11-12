@@ -19,6 +19,8 @@ module Models {
     export interface IHomework {
         title: string;
         description: string;
+        // Must always be stored as UTC
+        endDate: Date;
         programmingLanguage: ProgrammingLanguage;
         checker: string;
     }

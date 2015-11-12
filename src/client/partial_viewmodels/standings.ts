@@ -21,7 +21,8 @@ namespace PartialViewmodels {
         }
 
         private init(): void {
-            let initializeBindings = (users: IUser[]) => {
+            type IUserSummary = { name: string; totalGrade: number; };
+            let initializeBindings = (users: IUserSummary[]) => {
                 for (let user of users) {
                     this.standings.push({
                         name: user.name,

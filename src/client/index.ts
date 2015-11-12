@@ -12,6 +12,12 @@ class Viewmodel {
     constructor() {
         this.availableCourses = ko.observableArray<ICourseInfo>();
     }
+
+    public storeCourseName(course: string): boolean {
+        localStorage.setItem("lastSelectedCourse", course);
+        // Return true so we don't block the link
+        return true;
+    }
 }
 
 let viewmodel = new Viewmodel();

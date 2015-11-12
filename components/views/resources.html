@@ -1,1 +1,10 @@
 <h1>Resources page</h1>
+<dl data-bind="foreach: resources">
+    <dt>
+        <a data-bind="attr: { href: link }, text: name"></a>
+    </dt>
+    <dd data-bind="text: description"></dd>
+</dl>
+<!-- ko if: resources.length === 0 -->
+<h3>No resources have been added yet.</h3>
+<!-- /ko -->

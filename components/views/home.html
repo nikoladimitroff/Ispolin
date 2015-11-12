@@ -1,4 +1,29 @@
 <h1 data-bind="text: courseName"></h1>
+
+<div id="home-news">
+    <!-- ko foreach: news -->
+    <div data-bind="html: $data, css: { 'active-news': $index() === $parent.activeNews() }"></div>
+    <!-- /ko -->
+
+    <nav id="news-navigation">
+        <ul class="horizontal-list">
+            <li class="fa fa-2x fa-fast-backward navigation-button"
+                data-bind="click: changeNews.bind($component, -Infinity), css: { disabled: activeNews() === 0 }">
+            </li>
+            <li class="fa fa-2x fa-backward navigation-button"
+                data-bind="click: changeNews.bind($component, -1), css: { disabled: activeNews() === 0 }">
+            </li>
+            <li data-bind="text: (activeNews() + 1) + ' / ' + news.length"></li>
+            <li class="fa fa-2x fa-forward navigation-button"
+                data-bind="click: changeNews.bind($component, +1), css: { disabled: activeNews() === news.length - 1 }">
+            </li>
+            <li class="fa fa-2x fa-fast-forward navigation-button"
+                data-bind="click: changeNews.bind($component, Infinity), css: { disabled: activeNews() === news.length - 1 }">
+            </li>
+        </ul>
+    </nav>
+</div>
+
 <div class="signing-section" data-bind="if: !appViewmodel.isLoggedIn()">
     <login-form id="home-logging-form"
         params="viewmodel: loginVM">

@@ -56,34 +56,44 @@
         <script src="lib/js/head.min.js"></script>
         <script src="js/reveal.js"></script>
         <script>
+            (function () {
+                var presentationURL = localStorage.getItem("coursePresentationFrameURL");
+                var currentURL = location.href;
+                if (currentURL.indexOf(presentationURL) < 0) {
+                    setTimeout(function () {
+                        window.location.href = presentationURL;
+                    }, 0);
+                    return;
+                }
 
-            var revealSection = document.querySelector(".reveal .slides section");
-            revealSection.dataset.markdown = localStorage.getItem("activePresentation");
-            // Full list of configuration options available at:
-            // https://github.com/hakimel/reveal.js#configuration
-            Reveal.initialize({
-                controls: true,
-                touch: true,
-                mouseWheel: true,
-                overview: true,
-                progress: true,
-                slideNumber: "c / t",
-                history: true,
-                center: true,
-                help: true,
-                
+                var revealSection = document.querySelector(".reveal .slides section");
+                revealSection.dataset.markdown = localStorage.getItem("activePresentation");
+                // Full list of configuration options available at:
+                // https://github.com/hakimel/reveal.js#configuration
+                Reveal.initialize({
+                    controls: true,
+                    touch: true,
+                    mouseWheel: true,
+                    overview: true,
+                    progress: true,
+                    slideNumber: "c / t",
+                    history: true,
+                    center: true,
+                    help: true,
+                    
 
-                transition: 'slide',
+                    transition: 'slide',
 
-                dependencies: [
-                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
-                    { src: 'plugin/zoom-js/zoom.js', async: true },
-                    { src: 'plugin/math/math.js', async: true }
-                ]
-            });
+                    dependencies: [
+                        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                        { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+                        { src: 'plugin/zoom-js/zoom.js', async: true },
+                        { src: 'plugin/math/math.js', async: true }
+                    ]
+                });
+            })();
 
         </script>
 

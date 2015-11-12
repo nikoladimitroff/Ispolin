@@ -27,7 +27,8 @@ export class Homework implements IRoute {
                 homework = availableHomework;
             }
         }
-        if (!homework) {
+        let now = Date.now();
+        if (!homework || homework.endDate.getTime() >= now) {
             res.send(400, "No such homework is currently available.");
             return;
         }

@@ -47,11 +47,20 @@ class Config {
     }
 
     private loadData(): Q.Promise<any> {
-        const FIXED_COURSE = "gea";
-        let requestUrl = `/api/course-info/${FIXED_COURSE}`;
+        const storageKey = "lastSelectedCourse";
+        const selectedCourse: string = localStorage.getItem(storageKey);
+        if (!selectedCourse) {
+            // No course has been selected, redirect to home page
+            location.href = "/index.html";
+        }
+        let requestUrl = `/api/course-info/${selectedCourse}`;
         let course = Utils.loadJSON<Models.IDetailedCourseInfo>(requestUrl);
         course.then((data: Models.IDetailedCourseInfo) => {
             console.log("Course Info", data);
+            for (let hw of data.availableHomeworks) {
+                // Sadly, dates require parsing
+                hw.endDate = new Date(hw.endDate as any as string);
+            }
             this.courseInfo = data;
         });
         let loginPromise = this.checkLoginStatus();

@@ -6,7 +6,7 @@
 <h1>This is the main page of our new educational system!</h1>
 <h2>Check the main pages of one of the available courses:</h2>
 <dl id="available-courses" data-bind="foreach: availableCourses">
-    <dt><a data-bind="text: name, attr: { 'href': link }"></a></dt>
+    <dt><a data-bind="text: name, attr: { 'href': link }, click: $root.storeCourseName.bind($root, shortName)"></a></dt>
     <dd data-bind="text: description"></dd>
 </dl>
 

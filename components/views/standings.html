@@ -14,4 +14,11 @@
             <td data-bind="text: totalGrade.toFixed(3)" class="number"></td>
         </tr>
     </tbody>
-</ol>
+    <!-- ko if: standings().length === 0 -->
+    <tbody>
+        <tr>
+            <td colspan="3">No users have submitted homeworks yet.</td>
+        </tr>
+    </tbody>
+    <!-- /ko -->
+</table>

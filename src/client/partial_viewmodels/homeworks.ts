@@ -9,8 +9,12 @@ type IHomework = Models.IHomework;
 namespace PartialViewmodels {
     "use strict";
 
+    interface IOverdueHomework extends IHomework {
+        isOverdue?: KnockoutObservable<boolean>;
+    }
+
     export class Homeworks {
-        public availableHomeworks: IHomework[];
+        public availableHomeworks: IOverdueHomework[];
         public homeworkContents: KnockoutObservable<string>;
 
         private homeworkButtons: UIHelpers.MorphingButton[];
@@ -20,6 +24,11 @@ namespace PartialViewmodels {
         constructor() {
             this.availableHomeworks = Config.instance.courseInfo
                                                      .availableHomeworks;
+            for (let hw of this.availableHomeworks) {
+                let isOverdue = Date.now() >= hw.endDate.getTime();
+                hw.isOverdue = ko.observable(isOverdue);
+            }
+
             this.homeworkContents = ko.observable<string>();
 
             this.homeworkButtons = [];

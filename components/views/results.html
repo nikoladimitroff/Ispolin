@@ -8,12 +8,19 @@
             <th class="number">Percentage</th>
         </tr>
     </thead>
-    <tbody data-bind="foreach: grades">
+    <tbody id="results-grid" data-bind="foreach: grades">
         <tr>
             <td data-bind="text: source"></dr>
-            <td data-bind="text: grade" class="number"></td>
-            <td data-bind="text: max" class="number"></td>
+            <td data-bind="text: grade.toFixed(2)" class="number"></td>
+            <td data-bind="text: max.toFixed(2)" class="number"></td>
             <td data-bind="text: (grade / max * 100).toFixed(2) + '%'" class="number"></td>
         </tr>
     </tbody>
+    <!-- ko if: grades().length === 0 -->
+    <tbody>
+        <tr>
+            <td colspan="4">You have not submitted a homework yet.</td>
+        </tr>
+    </tbody>
+    <!-- /ko -->
 </table>

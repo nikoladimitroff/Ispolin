@@ -1,12 +1,18 @@
 <h1>Lectures</h1>
+<h3>(Use F to go fullscreen, arrows / mouse wheel to scroll)</h3>
 
-<ol data-bind="foreach: lectures">
-    <li><a data-bind="text: name, click: onclick"></a></li>
+<ol id="lectures-list" data-bind="foreach: lectures">
+    <li class="lecture-label"
+        data-bind="text: readableName,
+                   click: $component.onLectureClicked.bind($component, $data),
+                   css: { active: $component.activePresentation() && readableName === $component.activePresentation().readableName }">
+    </li>
 </ol>
 <iframe id="presentation-frame"
-        src="3rdparty/reveal.js/presentation-iframe.html"
+        allowfullscreen
+        src="/3rdparty/reveal.js/presentation-iframe.html"
         seamless="seamless"
-        data-bind="if: activePresentationSourceFile() !== null"
+        data-bind="if: activePresentation() !== null"
         width="1024"
         height="768">
 </iframe>

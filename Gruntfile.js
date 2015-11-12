@@ -24,8 +24,8 @@ module.exports = function (grunt) {
                 tasks: settings.tsTasks,
             },
             content: {
-                files: ["resources/**", "lectures/**"],
-                tasks: ["newer:copy:resources", "newer:copy:lectures"]
+                files: ["resources/**", "courses/**"],
+                tasks: ["newer:copy:resources", "newer:copy:courses"]
             },
             libs: {
                 files: ["styles/fonts/*", "styles/cursors/*"],
@@ -113,6 +113,7 @@ module.exports = function (grunt) {
                     { expand: true, src: "3rdparty/**", dest: "distr/client/" },
                     // 3rdparty scripts installed via npm below
                     { expand: false, src: "node_modules/knockout/build/output/knockout-latest.js", dest: "distr/client/3rdparty/knockout-latest.js" },
+                    { expand: false, src: "node_modules/q/q.js", dest: "distr/client/3rdparty/q.js" },
                     { expand: false, src: "node_modules/font-awesome/css/font-awesome.min.css", dest: "distr/client/3rdparty/font-awesome/css/font-awesome.min.css" },
                     { expand: true, flatten: true, src: "node_modules/font-awesome/fonts/*", dest: "distr/client/3rdparty/font-awesome/fonts/"},
                 ]
@@ -122,9 +123,9 @@ module.exports = function (grunt) {
                     { expand: true, src: "resources/**", dest: "distr/client/" },
                 ]
             },
-            lectures: {
+            courses: {
                 files: [
-                    { expand: true, src: "lectures/**", dest: "distr/client/" },
+                    { expand: true, src: "courses/**", dest: "distr/client/" },
                 ]
             },
             "system-index": {

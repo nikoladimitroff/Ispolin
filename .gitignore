@@ -6,6 +6,7 @@ src/**/*.js.map
 typings
 style/**/*.css
 tscommand-*.tmp.txt
+*.baseDir.ts
 
 # Github nodejs ignores
 # Logs

@@ -1,7 +1,9 @@
 // <reference path="../../common/models.ts" />
+// <reference path="../../common/utils.ts" />
 
 "use strict";
 import fs = require("fs");
+import fsExtra = require("fs-extra");
 import path = require("path");
 
 import bunyan = require("bunyan");
@@ -23,6 +25,11 @@ export interface IMappable<T> {
 let promisedReadfile = Q.denodeify(fs.readFile);
 let promisedReaddir = Q.denodeify(fs.readdir);
 
+
+function strEndsWith(str: string, suffix: string): boolean {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+};
+
 export class CourseParser {
     public static instance: CourseParser;
 
@@ -31,6 +38,8 @@ export class CourseParser {
     private allCourses: Models.ICourseInfo[];
     private detailedCourseMap: IMappable<IDetailedInfo>;
     private checkers: IMappable<CheckerFunc>;
+
+    private presentationFilesRoot: string;
 
     public static init(): void {
         /* tslint:disable */
@@ -41,6 +50,9 @@ export class CourseParser {
     constructor() {
         CourseParser.instance = this;
         this.courseBaseDir = path.join(__dirname, "../../client/courses");
+        const relativePresentationRoot = "../../client/3rdparty/reveal.js";
+        this.presentationFilesRoot = path.join(__dirname,
+                                               relativePresentationRoot);
         this.courseConfigFile = "ispolin.json";
         this.detailedCourseMap = {};
         this.allCourses = [];
@@ -68,12 +80,12 @@ export class CourseParser {
                 throw new Error("Could not read dir: " + this.courseBaseDir);
             }
             for (let course of courses) {
-                this.parseDataForCourse(course);
+                this.prepareCourse(course);
             }
         });
     }
 
-    private parseDataForCourse(courseName: string): void {
+    private prepareCourse(courseName: string): void {
         let courseDir = path.join(this.courseBaseDir, courseName);
 
         let configPath = path.join(courseDir, this.courseConfigFile);
@@ -94,7 +106,10 @@ export class CourseParser {
                       .then(this.parseNews.bind(this));
 
         let lecturesPath = path.join(courseDir, "lectures");
-        let getLectures = promisedReaddir(lecturesPath);
+        // Only accept .md files as lectures
+        let filter = files => files.filter(f => strEndsWith(f, ".md"));
+        let getLectures = promisedReaddir(lecturesPath)
+                          .then(filter);
 
         let homeworksPath = path.join(courseDir, "homeworks");
         let parseHomeworks = this.parseAllHomeworks.bind(this, homeworksPath);
@@ -115,6 +130,24 @@ export class CourseParser {
                 shortName: detailed.shortName
             };
             this.allCourses.push(simpleInfo);
+        });
+        this.copyPresentationFiles(courseName);
+    }
+
+    private copyPresentationFiles(courseName: string): void {
+        // In order meet the requirement that courses can safely assume
+        // that their lectures can use paths relative to their projects,
+        // Make hardlinks to the presentation files
+        // (a symlink would be better, but Windows requires admin rights)
+        let lecturesDir = path.join(this.courseBaseDir,
+                                    courseName,
+                                    "lectures");
+        promisedReaddir(this.presentationFilesRoot).done(files => {
+            for (let f of files) {
+                let src = path.join(this.presentationFilesRoot, f);
+                let dest = path.join(lecturesDir, f);
+                fsExtra.copySync(src, dest);
+            }
         });
     }
 
@@ -158,8 +191,8 @@ export class CourseParser {
         let promises: Q.Promise<IHomework>[] = [];
         let jsonParser = (rawJSON: string) => JSON.parse(rawJSON) as IHomework;
         for (let file of files) {
-            // Ignore .md files without meta.json file
-            if (file.indexOf(".md") !== -1) {
+            // Only parse .meta.json files
+            if (file.indexOf(".meta.json") === -1) {
                 continue;
             }
             let metaFilepath = path.join(basedir, file);
@@ -173,7 +206,13 @@ export class CourseParser {
                     throw new Error("Could not find checker " + meta.checker +
                                     " for homework " + meta.title);
                 }
-                meta.description = description;
+                meta.endDate = new Date(meta.endDate as any);
+                if (isNaN(meta.endDate.getTime())) {
+                    let error = "Unspecified or invalid endDate for homework" +
+                                meta.title;
+                    throw new Error(error);
+                }
+                meta.description = markdown.markdown.toHTML(description);
                 return meta;
             });
             promises.push(readHomework);

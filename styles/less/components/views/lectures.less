@@ -1,14 +1,26 @@
 @import "../../theme";
 
+#lectures-list {
+    width: 15%;
+    box-sizing: border-box;
+    float: left;
+}
+
 #presentation-frame {
-    width: 95%;
+    width: 75%;
     margin-left: 2.5%;
     height: 75%
 }
 
 .lecture-label {
     cursor: pointer;
+    -webkit-user-select: none;
+    font-size: 1.25em;
+    transition: color 0.3s linear;
     &:hover {
+        font-size: 1.425em;
+    }
+    &.active {
         color: @fancy-color-2;
     }
 }
