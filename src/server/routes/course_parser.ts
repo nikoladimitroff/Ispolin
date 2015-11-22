@@ -22,6 +22,8 @@ type CheckerFunc = (homeworkName: string, solution: string) => IGrade;
 export interface IMappable<T> {
     [name: string]: T;
 }
+type FilterFunc<T> = (array: T[]) => T[];
+
 let promisedReadfile = Q.denodeify(fs.readFile);
 let promisedReaddir = Q.denodeify(fs.readdir);
 
@@ -75,7 +77,8 @@ export class CourseParser {
         this.loadDefaultCheckers();
         // Find all directories that contain ispolin.json
         // and parse the configuration file
-        fs.readdir(this.courseBaseDir, (error, courses: string[]) => {
+        fs.readdir(this.courseBaseDir, (error: NodeJS.ErrnoException,
+                                        courses: string[]) => {
             if (error) {
                 throw new Error("Could not read dir: " + this.courseBaseDir);
             }
@@ -107,7 +110,8 @@ export class CourseParser {
 
         let lecturesPath = path.join(courseDir, "lectures");
         // Only accept .md files as lectures
-        let filter = files => files.filter(f => strEndsWith(f, ".md"));
+        let filter: FilterFunc<string> =
+            files => files.filter(f => strEndsWith(f, ".md"));
         let getLectures = promisedReaddir(lecturesPath)
                           .then(filter);
 
@@ -186,6 +190,21 @@ export class CourseParser {
                .filter(n => n.length > 0);
     }
 
+    private createHomework(meta: IHomework, description: string): IHomework {
+        if (!meta.checker || !this.findChecker(meta.checker)) {
+            throw new Error("Could not find checker " + meta.checker +
+                            " for homework " + meta.title);
+        }
+        meta.endDate = new Date(meta.endDate as any);
+        if (isNaN(meta.endDate.getTime())) {
+            let error = "Unspecified or invalid endDate for homework" +
+                        meta.title;
+            throw new Error(error);
+        }
+        meta.description = markdown.markdown.toHTML(description);
+        return meta;
+    }
+
     private parseAllHomeworks(basedir: string,
                               files: string[]): Q.Promise<IHomework[]> {
         let promises: Q.Promise<IHomework>[] = [];
@@ -201,21 +220,8 @@ export class CourseParser {
                            .then(jsonParser);
             let readFile = promisedReadfile(filepath, "utf-8");
             let readHomework = Q.spread([readMeta, readFile],
-                                        (meta: IHomework, description) => {
-                if (!meta.checker || !this.findChecker(meta.checker)) {
-                    throw new Error("Could not find checker " + meta.checker +
-                                    " for homework " + meta.title);
-                }
-                meta.endDate = new Date(meta.endDate as any);
-                if (isNaN(meta.endDate.getTime())) {
-                    let error = "Unspecified or invalid endDate for homework" +
-                                meta.title;
-                    throw new Error(error);
-                }
-                meta.description = markdown.markdown.toHTML(description);
-                return meta;
-            });
-            promises.push(readHomework);
+                                        this.createHomework.bind(this));
+            promises.push(readHomework as Q.Promise<IHomework>);
         }
         return Q.all(promises);
     }

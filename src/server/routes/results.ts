@@ -4,7 +4,6 @@
 import restify = require("restify");
 import Q = require("q");
 import { IRoute } from "./route";
-import DataAccessLayer from "../data_access_layer";
 import { SchemaModels } from "../schemas";
 
 type IUser = SchemaModels.IUser;

@@ -4,7 +4,8 @@
 import restify = require("restify");
 import Q = require("q");
 import { IRoute } from "./route";
-import DataAccessLayer from "../data_access_layer";
+import { Logger } from "../logger";
+import { DataAccessLayer } from "../data_access_layer";
 import { SchemaModels } from "../schemas";
 import { Validator } from "../validator";
 
@@ -81,9 +82,12 @@ export class Signup implements IRoute {
             mail: req.body.email,
             fn: req.body.fn
         });
-        let onsuccess = () => res.send(200, "");
+        let onsuccess = () => {
+            Logger.info("New user: {0}", user);
+            res.send(200, "");
+        };
         let onerror = (error: Error) => res.send(500, JSON.stringify(error));
-        DataAccessLayer.instance.saveAll([user])
-                                .done(onsuccess, onerror);
+        DataAccessLayer.saveAll([user])
+                       .done(onsuccess, onerror);
     }
 }

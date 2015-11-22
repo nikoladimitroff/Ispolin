@@ -10,18 +10,24 @@ import mongoose = require("mongoose");
 import Q = require("q");
 
 import { Validator } from "./validator";
-import DataAccessLayer from "./data_access_layer";
+import { Logger } from "./logger";
+import { DataAccessLayer } from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
 type MongooseModel = mongoose.Model<any>;
 type AnyPromise = Q.Promise<any>;
+
+interface IMongooseMap {
+    [key: string]: MongooseModel;
+}
+
 function clear(): AnyPromise {
     let databases = ["User", "CourseData"];
     let promises: AnyPromise[] = [];
     for (let i = 0; i < databases.length; i++) {
-        let mongoPromise = DataAccessLayer.instance.promiseForMongo();
-        let mappable = <IMappable<MongooseModel>>(<any>SchemaModels);
-        let model = <MongooseModel>(mappable[databases[i]]);
+        let mongoPromise = DataAccessLayer.promiseForMongo();
+        let mappable = SchemaModels as any as IMongooseMap;
+        let model = mappable[databases[i]];
         model.remove({}, mongoPromise.callback);
     }
     return Q.all(promises);
@@ -46,7 +52,7 @@ function populateUsers(): AnyPromise {
             fn: "54321"
         })
     ];
-    return DataAccessLayer.instance.saveAll(users);
+    return DataAccessLayer.saveAll(users);
 }
 
 function fillInCourseData(courseName: string,
@@ -79,7 +85,7 @@ function fillInCourseData(courseName: string,
             }]
         })
     ];
-    return DataAccessLayer.instance.saveAll(courseData);
+    return DataAccessLayer.saveAll(courseData);
 }
 
 function populateCourseData(): AnyPromise {
@@ -101,20 +107,17 @@ function populateData(): AnyPromise {
 }
 
 function main(): any {
-    let logger = bunyan.createLogger({ name: "Ispolin" });
-    let dal = new DataAccessLayer("mongodb://localhost/system-data", logger);
-
     let postClean = () => {
-        logger.info("Repopulating with default data...");
+        Logger.info("Repopulating with default data...");
         return populateData();
     };
     let postPopulate = () => {
-        logger.info("Done!");
+        Logger.info("Done!");
     };
     let onError = (error: string) => {
-        logger.error("FAILED!" + error);
+        Logger.error("FAILED!" + error);
     };
-    logger.info("Cleaning up db...");
+    Logger.info("Cleaning up db...");
     clear()
     .then(postClean, onError)
     .then(postPopulate, onError).done(() => process.exit());

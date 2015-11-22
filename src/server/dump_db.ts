@@ -2,26 +2,23 @@
 /// <reference path="../../typings/bunyan/bunyan.d.ts" />
 /// <reference path="../../typings/mongoose/mongoose.d.ts" />
 
-/// <reference path="../common/definitions.ts" />
-
 "use strict";
 import bunyan = require("bunyan");
 import mongoose = require("mongoose");
 import Q = require("q");
 
 import { Validator } from "./validator";
-import DataAccessLayer from "./data_access_layer";
+import { DataAccessLayer } from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
 type MongooseModel = mongoose.Model<any>;
 type AnyPromise = Q.Promise<any>;
 
-let dbReader = {
-    course: function (): AnyPromise {
-        return Q(SchemaModels.Course
-                             .find({})
-                             .exec());
-    },
+interface IFunctionContainer {
+    [key: string]: () => AnyPromise;
+}
+
+let dbReader: IFunctionContainer = {
     user: function (): AnyPromise {
         return Q(SchemaModels.User
                              .find({})
@@ -35,9 +32,6 @@ let dbReader = {
 };
 
 function main(): any {
-    let logger = bunyan.createLogger({ name: "Unnamed" });
-    let dal = new DataAccessLayer("mongodb://localhost/system-data", logger);
-
     let dbToPrint: string[] = [];
     if (process.argv.length === 2) {
         dbToPrint = ["user", "coursedata"];

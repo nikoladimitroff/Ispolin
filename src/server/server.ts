@@ -10,15 +10,14 @@ import path = require("path");
 import Q = require("q");
 import express = require("express");
 import restify = require("restify");
-import bunyan = require("bunyan");
 import passport = require("passport");
 import { Strategy as LocalStrategy } from "passport-local";
 
 import session = require("express-session");
 import bodyParser = require("body-parser");
 
+import { Logger } from "./logger";
 import { Validator } from "./validator";
-import DataAccessLayer from "./data_access_layer";
 import { SchemaModels } from "./schemas";
 
 import { CourseParser } from "./routes/course_parser";
@@ -32,23 +31,17 @@ import { Homework as HomeworkRoute } from "./routes/homework";
 type IUser = SchemaModels.IUser;
 
 export default class Server {
-    public logger: bunyan.Logger;
-    public dal: DataAccessLayer;
-
     private app: restify.Server;
 
     constructor() {
         Q.longStackSupport = true;
         this.app = restify.createServer({ name: "Ispolin" });
-        this.logger = bunyan.createLogger({ name: "Ispolin" });
-        this.dal = new DataAccessLayer("mongodb://localhost/system-data",
-                                       this.logger);
         this.setupPassport();
         this.setupRouting();
     }
 
     public listen(): void {
-        this.logger.info("Server started!");
+        Logger.info("Server started!");
         this.app.listen(8080);
     }
 
@@ -93,6 +86,7 @@ export default class Server {
                         res: restify.Response,
                         next: restify.Next): void {
         res.send(200);
+        Logger.info("User logged in: {0}", (req as any).user);
     }
 
     private setupRouting(): void {

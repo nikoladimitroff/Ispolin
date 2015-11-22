@@ -3,11 +3,11 @@
 "use strict";
 import restify = require("restify");
 import Q = require("q");
+import { Logger } from "../logger";
 import { IRoute } from "./route";
-import DataAccessLayer from "../data_access_layer";
+import { DataAccessLayer } from "../data_access_layer";
 import { SchemaModels } from "../schemas";
 
-type ICourseInfo = SchemaModels.ICourseInfo;
 type IGrade = Models.IGrade;
 type ICourseData = Models.ICourseData;
 
@@ -26,8 +26,8 @@ export class Users implements IRoute {
         };
         let courseName = req.params.shortCourseName;
         console.log(courseName);
-        this.summarizeUsers(courseName).done(sendResults, () => {
-            console.log("ERROR", arguments);
+        this.summarizeUsers(courseName).done(sendResults, (error) => {
+            Logger.error("Error in /api/users: {0}", error);
         });
     }
 
@@ -52,7 +52,7 @@ export class Users implements IRoute {
                                         .populate("user")
                                         .exec());
         let promise = queryGrades.then(this.groupUserGrades.bind(this),
-                                       DataAccessLayer.instance.onError);
+                                       DataAccessLayer.onError);
         return promise as any as SummarizedGradesPromise;
     }
 }

@@ -7,6 +7,7 @@ export function testCppFile(homeworkName: string, solution: string): IGrade {
         source: homeworkName,
         grade: 5,
         max: 10,
-        runningTime: 15
+        runningTime: 15,
+        status: Models.HomeworkStatus.NotCompiling
     };
 }

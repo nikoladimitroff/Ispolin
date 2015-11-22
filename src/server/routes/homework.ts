@@ -4,7 +4,7 @@
 import restify = require("restify");
 import Q = require("q");
 import { IRoute } from "./route";
-import DataAccessLayer from "../data_access_layer";
+import { DataAccessLayer } from "../data_access_layer";
 import { SchemaModels } from "../schemas";
 import { CourseParser } from "./course_parser";
 
@@ -21,7 +21,7 @@ export class Homework implements IRoute {
         let homeworkSolution = req.body.solution;
         // Find the checker for this homework
         let course = CourseParser.instance.getDetailedInfo(courseName);
-        let homework = null;
+        let homework: Models.IHomework = null;
         for (let availableHomework of course.availableHomeworks) {
             if (availableHomework.title === homeworkName) {
                 homework = availableHomework;
@@ -71,7 +71,7 @@ export class Homework implements IRoute {
             if (!alreadyDoneHomework) {
                 courseData.results.push(result);
             }
-            return DataAccessLayer.instance.saveAll([courseData]);
+            return DataAccessLayer.saveAll([courseData]);
     });
     }
 }
